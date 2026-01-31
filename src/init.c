@@ -1,0 +1,53 @@
+#include "automerge.h"
+
+static const R_CallMethodDef CallEntries[] = {
+    // Document lifecycle
+    {"C_am_create", (DL_FUNC) &C_am_create, 1},
+    {"C_am_save", (DL_FUNC) &C_am_save, 1},
+    {"C_am_load", (DL_FUNC) &C_am_load, 1},
+    {"C_am_fork", (DL_FUNC) &C_am_fork, 2},
+    {"C_am_merge", (DL_FUNC) &C_am_merge, 2},
+    {"C_am_get_actor", (DL_FUNC) &C_am_get_actor, 1},
+    {"C_am_get_actor_hex", (DL_FUNC) &C_am_get_actor_hex, 1},
+    {"C_am_set_actor", (DL_FUNC) &C_am_set_actor, 2},
+    {"C_am_commit", (DL_FUNC) &C_am_commit, 3},
+    {"C_am_rollback", (DL_FUNC) &C_am_rollback, 1},
+    // Object operations
+    {"C_am_put", (DL_FUNC) &C_am_put, 4},
+    {"C_am_get", (DL_FUNC) &C_am_get, 3},
+    {"C_am_delete", (DL_FUNC) &C_am_delete, 3},
+    {"C_am_keys", (DL_FUNC) &C_am_keys, 2},
+    {"C_am_length", (DL_FUNC) &C_am_length, 2},
+    {"C_am_insert", (DL_FUNC) &C_am_insert, 4},
+    {"C_am_text_splice", (DL_FUNC) &C_am_text_splice, 4},
+    {"C_am_text_content", (DL_FUNC) &C_am_text_content, 1},
+    {"C_am_text_update", (DL_FUNC) &C_am_text_update, 3},
+    {"C_am_values", (DL_FUNC) &C_am_values, 2},
+    {"C_am_counter_increment", (DL_FUNC) &C_am_counter_increment, 4},
+    // Synchronization operations
+    {"C_am_sync_state_new", (DL_FUNC) &C_am_sync_state_new, 0},
+    {"C_am_sync_encode", (DL_FUNC) &C_am_sync_encode, 2},
+    {"C_am_sync_decode", (DL_FUNC) &C_am_sync_decode, 3},
+    {"C_am_get_heads", (DL_FUNC) &C_am_get_heads, 1},
+    {"C_am_get_changes", (DL_FUNC) &C_am_get_changes, 2},
+    {"C_am_apply_changes", (DL_FUNC) &C_am_apply_changes, 2},
+    // Historical queries (phase 6)
+    {"C_am_get_last_local_change", (DL_FUNC) &C_am_get_last_local_change, 1},
+    {"C_am_get_change_by_hash", (DL_FUNC) &C_am_get_change_by_hash, 2},
+    {"C_am_get_changes_added", (DL_FUNC) &C_am_get_changes_added, 2},
+    // Cursor and mark operations
+    {"C_am_cursor", (DL_FUNC) &C_am_cursor, 2},
+    {"C_am_cursor_position", (DL_FUNC) &C_am_cursor_position, 1},
+    {"C_am_mark", (DL_FUNC) &C_am_mark, 6},
+    {"C_am_marks", (DL_FUNC) &C_am_marks, 1},
+    {"C_am_marks_at", (DL_FUNC) &C_am_marks_at, 2},
+    // Helper functions
+    {"C_get_doc_from_objid", (DL_FUNC) &C_get_doc_from_objid, 1},
+    {NULL, NULL, 0}
+};
+
+void R_init_automerge(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+    R_forceSymbols(dll, TRUE);
+}

@@ -35,6 +35,9 @@ knitr::opts_chunk$set(
 # # Transactions
 # am_commit(doc, "message") # Commit changes
 # am_rollback(doc) # Cancel pending changes
+# 
+# # Cleanup
+# am_close(doc) # Explicitly free resources (optional)
 
 ## -----------------------------------------------------------------------------
 # # S3 operators

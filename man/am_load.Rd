@@ -25,9 +25,16 @@ bytes <- am_save(doc1)
 doc2 <- am_load(bytes)
 
 # Save to and load from file
+doc3 <- am_create()
 file <- tempfile()
-writeBin(am_save(doc1), file)
+writeBin(am_save(doc3), file)
 
-doc <- am_load(readBin(file, "raw", 1e5))
+doc4 <- am_load(readBin(file, "raw", 1e5))
+
 unlink(file)
+am_close(doc1)
+am_close(doc2)
+am_close(doc3)
+am_close(doc4)
+
 }

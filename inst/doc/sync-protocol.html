@@ -381,7 +381,10 @@ protocol automatically.</p>
 <span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>peer2[[<span class="st">&quot;data1&quot;</span>]]</span>
 <span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span>
 <span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>peer2[[<span class="st">&quot;data2&quot;</span>]]</span>
-<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span></code></pre></div>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="fu">am_close</span>(peer1)</span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a><span class="fu">am_close</span>(peer2)</span></code></pre></div>
 <p><strong>When to use</strong>: Simple peer-to-peer synchronization
 where both sides need all changes.</p>
 </div>
@@ -406,11 +409,14 @@ changes back:</p>
 <span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a></span>
 <span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co"># Target now has source&#39;s changes</span></span>
 <span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>target[[<span class="st">&quot;version&quot;</span>]]</span>
-<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2.0&quot;</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; [1] &quot;1.0&quot;</span></span>
 <span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a></span>
 <span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co"># Source is unchanged</span></span>
 <span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="fu">names</span>(source)</span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt; [1] &quot;features&quot; &quot;version&quot;</span></span></code></pre></div>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt; [1] &quot;features&quot; &quot;version&quot;</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="fu">am_close</span>(source)</span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="fu">am_close</span>(target)</span></code></pre></div>
 <p><strong>When to use</strong>: Client pulling updates from server,
 importing changes from another peer.</p>
 </div>
@@ -468,7 +474,10 @@ API.</p>
 <span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a>peer3[[<span class="st">&quot;source&quot;</span>]]</span>
 <span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a><span class="co">#&gt; [1] &quot;peer4&quot;</span></span>
 <span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a>peer4[[<span class="st">&quot;source&quot;</span>]]</span>
-<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a><span class="co">#&gt; [1] &quot;peer4&quot;</span></span></code></pre></div>
+<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a><span class="co">#&gt; [1] &quot;peer4&quot;</span></span>
+<span id="cb4-49"><a href="#cb4-49" tabindex="-1"></a></span>
+<span id="cb4-50"><a href="#cb4-50" tabindex="-1"></a><span class="fu">am_close</span>(peer3)</span>
+<span id="cb4-51"><a href="#cb4-51" tabindex="-1"></a><span class="fu">am_close</span>(peer4)</span></code></pre></div>
 </div>
 <div id="protocol-components" class="section level3">
 <h3>Protocol Components</h3>
@@ -556,7 +565,12 @@ changes:</p>
 <span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a></span>
 <span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co"># Verify</span></span>
 <span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>peer_c[[<span class="st">&quot;v3&quot;</span>]]</span>
-<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; [1] &quot;third&quot;</span></span></code></pre></div>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; [1] &quot;third&quot;</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="fu">am_close</span>(base_doc)</span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="fu">am_close</span>(peer_a)</span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="fu">am_close</span>(peer_b)</span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="fu">am_close</span>(peer_c)</span></code></pre></div>
 <p><strong>When to use</strong>: Git-like workflows, change logs,
 selective sync.</p>
 </div>
@@ -607,7 +621,9 @@ graph.</p>
 <span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>changes_since_v1 <span class="ot">&lt;-</span> <span class="fu">am_get_changes</span>(doc_main, heads_v1)</span>
 <span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="fu">str</span>(changes_since_v1)</span>
 <span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; List of 1</span></span>
-<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt;  $ : raw [1:126] 85 6f 4a 83 ...</span></span></code></pre></div>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt;  $ : raw [1:126] 85 6f 4a 83 ...</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="fu">am_close</span>(doc_main)</span></code></pre></div>
 </div>
 <div id="incremental-sync-pattern" class="section level3">
 <h3>Incremental Sync Pattern</h3>
@@ -650,7 +666,10 @@ graph.</p>
 <span id="cb9-36"><a href="#cb9-36" tabindex="-1"></a><span class="fu">am_apply_changes</span>(server, client_changes)</span>
 <span id="cb9-37"><a href="#cb9-37" tabindex="-1"></a></span>
 <span id="cb9-38"><a href="#cb9-38" tabindex="-1"></a>server[[<span class="st">&quot;local_cache&quot;</span>]]</span>
-<span id="cb9-39"><a href="#cb9-39" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<span id="cb9-39"><a href="#cb9-39" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb9-40"><a href="#cb9-40" tabindex="-1"></a></span>
+<span id="cb9-41"><a href="#cb9-41" tabindex="-1"></a><span class="fu">am_close</span>(server)</span>
+<span id="cb9-42"><a href="#cb9-42" tabindex="-1"></a><span class="fu">am_close</span>(client)</span></code></pre></div>
 </div>
 <div id="detecting-divergence" class="section level3">
 <h3>Detecting Divergence</h3>
@@ -696,7 +715,10 @@ graph.</p>
 <span id="cb10-40"><a href="#cb10-40" tabindex="-1"></a></span>
 <span id="cb10-41"><a href="#cb10-41" tabindex="-1"></a><span class="co"># After sync, heads are identical again</span></span>
 <span id="cb10-42"><a href="#cb10-42" tabindex="-1"></a><span class="fu">identical</span>(<span class="fu">am_get_heads</span>(peer_x), <span class="fu">am_get_heads</span>(peer_y))</span>
-<span id="cb10-43"><a href="#cb10-43" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<span id="cb10-43"><a href="#cb10-43" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb10-44"><a href="#cb10-44" tabindex="-1"></a></span>
+<span id="cb10-45"><a href="#cb10-45" tabindex="-1"></a><span class="fu">am_close</span>(peer_x)</span>
+<span id="cb10-46"><a href="#cb10-46" tabindex="-1"></a><span class="fu">am_close</span>(peer_y)</span></code></pre></div>
 </div>
 </div>
 <div id="concurrent-edits" class="section level2">
@@ -732,7 +754,11 @@ graph.</p>
 <span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a></span>
 <span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a><span class="co"># Status: Deterministic conflict resolution (one value wins)</span></span>
 <span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a>editor1[[<span class="st">&quot;status&quot;</span>]]</span>
-<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a><span class="co">#&gt; [1] &quot;review&quot;</span></span></code></pre></div>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a><span class="co">#&gt; [1] &quot;published&quot;</span></span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a></span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a><span class="fu">am_close</span>(base)</span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a><span class="fu">am_close</span>(editor1)</span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a><span class="fu">am_close</span>(editor2)</span></code></pre></div>
 </div>
 <div id="sync-performance" class="section level2">
 <h2>Sync Performance</h2>
@@ -777,7 +803,12 @@ and <em>efficiency</em>:</p>
 <span id="cb12-35"><a href="#cb12-35" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">am_save</span>(doc_frequent))</span>
 <span id="cb12-36"><a href="#cb12-36" tabindex="-1"></a><span class="co">#&gt; [1] 265</span></span>
 <span id="cb12-37"><a href="#cb12-37" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">am_save</span>(doc_batched))</span>
-<span id="cb12-38"><a href="#cb12-38" tabindex="-1"></a><span class="co">#&gt; [1] 186</span></span></code></pre></div>
+<span id="cb12-38"><a href="#cb12-38" tabindex="-1"></a><span class="co">#&gt; [1] 186</span></span>
+<span id="cb12-39"><a href="#cb12-39" tabindex="-1"></a></span>
+<span id="cb12-40"><a href="#cb12-40" tabindex="-1"></a><span class="fu">am_close</span>(doc_frequent)</span>
+<span id="cb12-41"><a href="#cb12-41" tabindex="-1"></a><span class="fu">am_close</span>(peer_frequent)</span>
+<span id="cb12-42"><a href="#cb12-42" tabindex="-1"></a><span class="fu">am_close</span>(doc_batched)</span>
+<span id="cb12-43"><a href="#cb12-43" tabindex="-1"></a><span class="fu">am_close</span>(peer_batched)</span></code></pre></div>
 <p><strong>Batching creates smaller documents</strong> because:</p>
 <ul>
 <li>Fewer commit metadata entries</li>
@@ -819,7 +850,9 @@ and <em>efficiency</em>:</p>
 <span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a><span class="fu">am_commit</span>(doc_hybrid, <span class="st">&quot;Record login&quot;</span>)</span>
 <span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a></span>
 <span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a><span class="co"># Sync again</span></span>
-<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a><span class="co"># result &lt;- sync_with_server(doc_hybrid)</span></span></code></pre></div>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a><span class="co"># result &lt;- sync_with_server(doc_hybrid)</span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a><span class="fu">am_close</span>(doc_hybrid)</span></code></pre></div>
 </div>
 <div id="reusing-sync-state" class="section level3">
 <h3>Reusing Sync State</h3>
@@ -872,7 +905,12 @@ incremental sync:</p>
 <span id="cb14-45"><a href="#cb14-45" tabindex="-1"></a>msg3 <span class="ot">&lt;-</span> <span class="fu">am_sync_encode</span>(doc_reuse, sync_state_local)</span>
 <span id="cb14-46"><a href="#cb14-46" tabindex="-1"></a><span class="fu">am_sync_decode</span>(peer_reuse, sync_state_peer, msg3)</span>
 <span id="cb14-47"><a href="#cb14-47" tabindex="-1"></a></span>
-<span id="cb14-48"><a href="#cb14-48" tabindex="-1"></a><span class="co"># Sync state remembers what was already exchanged</span></span></code></pre></div>
+<span id="cb14-48"><a href="#cb14-48" tabindex="-1"></a><span class="co"># Sync state remembers what was already exchanged</span></span>
+<span id="cb14-49"><a href="#cb14-49" tabindex="-1"></a></span>
+<span id="cb14-50"><a href="#cb14-50" tabindex="-1"></a><span class="fu">am_close</span>(doc_no_reuse)</span>
+<span id="cb14-51"><a href="#cb14-51" tabindex="-1"></a><span class="fu">am_close</span>(peer_no_reuse)</span>
+<span id="cb14-52"><a href="#cb14-52" tabindex="-1"></a><span class="fu">am_close</span>(doc_reuse)</span>
+<span id="cb14-53"><a href="#cb14-53" tabindex="-1"></a><span class="fu">am_close</span>(peer_reuse)</span></code></pre></div>
 <p><strong>When to persist sync state:</strong></p>
 <ul>
 <li>Long-lived connections (WebSocket servers)</li>
@@ -910,37 +948,42 @@ incremental sync:</p>
 <span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a>    syncs_performed <span class="ot">&lt;-</span> syncs_performed <span class="sc">+</span> <span class="dv">1</span></span>
 <span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a>  }</span>
 <span id="cb15-27"><a href="#cb15-27" tabindex="-1"></a></span>
-<span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
 <span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a>    <span class="at">changes =</span> changes_made,</span>
 <span id="cb15-30"><a href="#cb15-30" tabindex="-1"></a>    <span class="at">syncs =</span> syncs_performed,</span>
 <span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a>    <span class="at">size =</span> <span class="fu">length</span>(<span class="fu">am_save</span>(doc))</span>
 <span id="cb15-32"><a href="#cb15-32" tabindex="-1"></a>  )</span>
-<span id="cb15-33"><a href="#cb15-33" tabindex="-1"></a>}</span>
-<span id="cb15-34"><a href="#cb15-34" tabindex="-1"></a></span>
-<span id="cb15-35"><a href="#cb15-35" tabindex="-1"></a><span class="co"># No batching: commit and sync after every change</span></span>
-<span id="cb15-36"><a href="#cb15-36" tabindex="-1"></a>result_no_batch <span class="ot">&lt;-</span> <span class="fu">measure_sync</span>(<span class="dv">20</span>, <span class="dv">1</span>)</span>
-<span id="cb15-37"><a href="#cb15-37" tabindex="-1"></a></span>
-<span id="cb15-38"><a href="#cb15-38" tabindex="-1"></a><span class="co"># Medium batching: commit every 5 changes</span></span>
-<span id="cb15-39"><a href="#cb15-39" tabindex="-1"></a>result_medium <span class="ot">&lt;-</span> <span class="fu">measure_sync</span>(<span class="dv">20</span>, <span class="dv">5</span>)</span>
-<span id="cb15-40"><a href="#cb15-40" tabindex="-1"></a></span>
-<span id="cb15-41"><a href="#cb15-41" tabindex="-1"></a><span class="co"># Full batching: single commit at end</span></span>
-<span id="cb15-42"><a href="#cb15-42" tabindex="-1"></a>result_full <span class="ot">&lt;-</span> <span class="fu">measure_sync</span>(<span class="dv">20</span>, <span class="dv">20</span>)</span>
-<span id="cb15-43"><a href="#cb15-43" tabindex="-1"></a></span>
-<span id="cb15-44"><a href="#cb15-44" tabindex="-1"></a><span class="co"># Compare results</span></span>
-<span id="cb15-45"><a href="#cb15-45" tabindex="-1"></a>result_no_batch<span class="sc">$</span>syncs</span>
-<span id="cb15-46"><a href="#cb15-46" tabindex="-1"></a><span class="co">#&gt; [1] 20</span></span>
-<span id="cb15-47"><a href="#cb15-47" tabindex="-1"></a>result_medium<span class="sc">$</span>syncs</span>
-<span id="cb15-48"><a href="#cb15-48" tabindex="-1"></a><span class="co">#&gt; [1] 4</span></span>
-<span id="cb15-49"><a href="#cb15-49" tabindex="-1"></a>result_full<span class="sc">$</span>syncs</span>
-<span id="cb15-50"><a href="#cb15-50" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
-<span id="cb15-51"><a href="#cb15-51" tabindex="-1"></a></span>
-<span id="cb15-52"><a href="#cb15-52" tabindex="-1"></a><span class="co"># Document sizes</span></span>
-<span id="cb15-53"><a href="#cb15-53" tabindex="-1"></a>result_no_batch<span class="sc">$</span>size</span>
-<span id="cb15-54"><a href="#cb15-54" tabindex="-1"></a><span class="co">#&gt; [1] 461</span></span>
-<span id="cb15-55"><a href="#cb15-55" tabindex="-1"></a>result_medium<span class="sc">$</span>size</span>
-<span id="cb15-56"><a href="#cb15-56" tabindex="-1"></a><span class="co">#&gt; [1] 276</span></span>
-<span id="cb15-57"><a href="#cb15-57" tabindex="-1"></a>result_full<span class="sc">$</span>size</span>
-<span id="cb15-58"><a href="#cb15-58" tabindex="-1"></a><span class="co">#&gt; [1] 233</span></span></code></pre></div>
+<span id="cb15-33"><a href="#cb15-33" tabindex="-1"></a></span>
+<span id="cb15-34"><a href="#cb15-34" tabindex="-1"></a>  <span class="fu">am_close</span>(doc)</span>
+<span id="cb15-35"><a href="#cb15-35" tabindex="-1"></a>  <span class="fu">am_close</span>(peer)</span>
+<span id="cb15-36"><a href="#cb15-36" tabindex="-1"></a></span>
+<span id="cb15-37"><a href="#cb15-37" tabindex="-1"></a>  result</span>
+<span id="cb15-38"><a href="#cb15-38" tabindex="-1"></a>}</span>
+<span id="cb15-39"><a href="#cb15-39" tabindex="-1"></a></span>
+<span id="cb15-40"><a href="#cb15-40" tabindex="-1"></a><span class="co"># No batching: commit and sync after every change</span></span>
+<span id="cb15-41"><a href="#cb15-41" tabindex="-1"></a>result_no_batch <span class="ot">&lt;-</span> <span class="fu">measure_sync</span>(<span class="dv">20</span>, <span class="dv">1</span>)</span>
+<span id="cb15-42"><a href="#cb15-42" tabindex="-1"></a></span>
+<span id="cb15-43"><a href="#cb15-43" tabindex="-1"></a><span class="co"># Medium batching: commit every 5 changes</span></span>
+<span id="cb15-44"><a href="#cb15-44" tabindex="-1"></a>result_medium <span class="ot">&lt;-</span> <span class="fu">measure_sync</span>(<span class="dv">20</span>, <span class="dv">5</span>)</span>
+<span id="cb15-45"><a href="#cb15-45" tabindex="-1"></a></span>
+<span id="cb15-46"><a href="#cb15-46" tabindex="-1"></a><span class="co"># Full batching: single commit at end</span></span>
+<span id="cb15-47"><a href="#cb15-47" tabindex="-1"></a>result_full <span class="ot">&lt;-</span> <span class="fu">measure_sync</span>(<span class="dv">20</span>, <span class="dv">20</span>)</span>
+<span id="cb15-48"><a href="#cb15-48" tabindex="-1"></a></span>
+<span id="cb15-49"><a href="#cb15-49" tabindex="-1"></a><span class="co"># Compare results</span></span>
+<span id="cb15-50"><a href="#cb15-50" tabindex="-1"></a>result_no_batch<span class="sc">$</span>syncs</span>
+<span id="cb15-51"><a href="#cb15-51" tabindex="-1"></a><span class="co">#&gt; [1] 20</span></span>
+<span id="cb15-52"><a href="#cb15-52" tabindex="-1"></a>result_medium<span class="sc">$</span>syncs</span>
+<span id="cb15-53"><a href="#cb15-53" tabindex="-1"></a><span class="co">#&gt; [1] 4</span></span>
+<span id="cb15-54"><a href="#cb15-54" tabindex="-1"></a>result_full<span class="sc">$</span>syncs</span>
+<span id="cb15-55"><a href="#cb15-55" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb15-56"><a href="#cb15-56" tabindex="-1"></a></span>
+<span id="cb15-57"><a href="#cb15-57" tabindex="-1"></a><span class="co"># Document sizes</span></span>
+<span id="cb15-58"><a href="#cb15-58" tabindex="-1"></a>result_no_batch<span class="sc">$</span>size</span>
+<span id="cb15-59"><a href="#cb15-59" tabindex="-1"></a><span class="co">#&gt; [1] 461</span></span>
+<span id="cb15-60"><a href="#cb15-60" tabindex="-1"></a>result_medium<span class="sc">$</span>size</span>
+<span id="cb15-61"><a href="#cb15-61" tabindex="-1"></a><span class="co">#&gt; [1] 276</span></span>
+<span id="cb15-62"><a href="#cb15-62" tabindex="-1"></a>result_full<span class="sc">$</span>size</span>
+<span id="cb15-63"><a href="#cb15-63" tabindex="-1"></a><span class="co">#&gt; [1] 233</span></span></code></pre></div>
 </div>
 </div>
 <div id="next-steps" class="section level2">

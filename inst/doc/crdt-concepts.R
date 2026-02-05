@@ -25,6 +25,9 @@ am_merge(doc1, doc2)
 # One value wins (deterministic, all replicas agree)
 doc1[["name"]]
 
+am_close(doc1)
+am_close(doc2)
+
 ## -----------------------------------------------------------------------------
 doc3 <- am_create()
 doc3[["user"]] <- list(name = "Alice", age = 30L, city = "Boston")
@@ -46,6 +49,9 @@ am_merge(doc3, doc4)
 user_final <- am_get(doc3, AM_ROOT, "user")
 am_get(doc3, user_final, "age")
 am_get(doc3, user_final, "city")
+
+am_close(doc3)
+am_close(doc4)
 
 ## -----------------------------------------------------------------------------
 doc5 <- am_create()
@@ -71,6 +77,9 @@ for (i in seq_len(am_length(doc5, items5))) {
   print(am_get(doc5, items5, i))
 }
 
+am_close(doc5)
+am_close(doc6)
+
 ## -----------------------------------------------------------------------------
 doc7 <- am_create()
 am_put(doc7, AM_ROOT, "document", am_text("The quick fox jumps"))
@@ -91,6 +100,9 @@ am_merge(doc7, doc8)
 # Both edits preserved
 am_text_content(text7)
 
+am_close(doc7)
+am_close(doc8)
+
 ## -----------------------------------------------------------------------------
 # String (deterministic conflict resolution)
 doc9 <- am_create()
@@ -101,6 +113,9 @@ doc9[["title"]] <- "My Document"
 doc10[["title"]] <- "Our Document"
 am_merge(doc9, doc10)
 doc9[["title"]] # One value wins deterministically
+
+am_close(doc9)
+am_close(doc10)
 
 # Text object (CRDT)
 doc11 <- am_create()
@@ -115,6 +130,9 @@ am_text_splice(text12, 5, 0, " Everyone")
 am_merge(doc11, doc12)
 
 am_text_content(text11)
+
+am_close(doc11)
+am_close(doc12)
 
 ## -----------------------------------------------------------------------------
 doc13 <- am_create()
@@ -134,6 +152,9 @@ am_merge(doc13, doc14)
 # Sum of all increments
 doc13[["likes"]]
 
+am_close(doc13)
+am_close(doc14)
+
 ## -----------------------------------------------------------------------------
 doc15 <- am_create()
 doc15[["created_at"]] <- Sys.time()
@@ -151,6 +172,9 @@ am_merge(doc15, doc16)
 doc15[["created_at"]]
 doc15[["updated_at"]]
 
+am_close(doc15)
+am_close(doc16)
+
 ## -----------------------------------------------------------------------------
 doc17 <- am_create()
 am_put(doc17, AM_ROOT, "text", am_text("Hello World"))
@@ -165,6 +189,8 @@ am_text_splice(text17, 0, 0, "Hi ")
 # Cursor automatically adjusts
 new_pos <- am_cursor_position(cursor)
 new_pos # Cursor moved with text from original position 6
+
+am_close(doc17)
 
 ## -----------------------------------------------------------------------------
 doc18 <- am_create()
@@ -185,6 +211,8 @@ str(marks)
 marks_at_pos <- am_marks_at(text18, 2) # Position 2 (in "Hello")
 str(marks_at_pos)
 
+am_close(doc18)
+
 ## -----------------------------------------------------------------------------
 doc19 <- am_create()
 am_put(doc19, AM_ROOT, "text", am_text("Hello"))
@@ -200,6 +228,8 @@ am_text_splice(text19, 5, 0, " World")
 marks <- am_marks(text19)
 str(marks)
 
+am_close(doc19)
+
 ## -----------------------------------------------------------------------------
 doc20 <- am_create()
 
@@ -211,6 +241,8 @@ am_commit(doc20)
 
 # Size includes all history
 length(am_save(doc20))
+
+am_close(doc20)
 
 ## -----------------------------------------------------------------------------
 # Map: Deletion vs concurrent update - update wins
@@ -228,6 +260,9 @@ am_commit(doc22)
 
 am_merge(doc21, doc22)
 doc21[["temp"]] # Update takes precedence over delete
+
+am_close(doc21)
+am_close(doc22)
 
 ## -----------------------------------------------------------------------------
 # List: Delete and insert at same position - both operations apply
@@ -251,6 +286,9 @@ for (i in seq_len(am_length(doc23, items23))) {
   print(am_get(doc23, items23, i))
 }
 
+am_close(doc23)
+am_close(doc24)
+
 ## -----------------------------------------------------------------------------
 # Good: Independent counters per user
 doc_good <- am_create()
@@ -262,6 +300,9 @@ doc_good[["votes"]] <- list(
 # Better than: Single counter for all votes
 doc_bad <- am_create()
 doc_bad[["total_votes"]] <- am_counter(0) # Loses attribution
+
+am_close(doc_good)
+am_close(doc_bad)
 
 ## -----------------------------------------------------------------------------
 doc25 <- am_create()
@@ -275,6 +316,8 @@ doc25[["status"]] <- "active"
 am_commit(doc25, "Set status")
 doc25[["role"]] <- "admin"
 am_commit(doc25, "Set role")
+
+am_close(doc25)
 
 ## -----------------------------------------------------------------------------
 doc26 <- am_create()
@@ -290,4 +333,7 @@ am_merge(doc26, doc27)
 
 # One will win - application should handle both states sensibly
 doc26[["status"]] # Should be prepared for either 'published' or 'archived'
+
+am_close(doc26)
+am_close(doc27)
 

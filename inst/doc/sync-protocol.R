@@ -30,6 +30,9 @@ peer1[["data2"]]
 peer2[["data1"]]
 peer2[["data2"]]
 
+am_close(peer1)
+am_close(peer2)
+
 ## -----------------------------------------------------------------------------
 # Create source document
 source <- am_create()
@@ -51,6 +54,9 @@ target[["version"]]
 
 # Source is unchanged
 names(source)
+
+am_close(source)
+am_close(target)
 
 ## -----------------------------------------------------------------------------
 # Create two peers
@@ -99,6 +105,9 @@ round
 peer3[["source"]]
 peer4[["source"]]
 
+am_close(peer3)
+am_close(peer4)
+
 ## -----------------------------------------------------------------------------
 # Create base document that will be shared
 base_doc <- am_create()
@@ -131,6 +140,7 @@ am_apply_changes(peer_b, changes)
 peer_b[["v2"]]
 peer_b[["v3"]]
 
+
 ## -----------------------------------------------------------------------------
 # Save individual changes to files
 temp_dir <- tempdir()
@@ -152,6 +162,11 @@ am_apply_changes(peer_c, loaded_changes)
 
 # Verify
 peer_c[["v3"]]
+
+am_close(base_doc)
+am_close(peer_a)
+am_close(peer_b)
+am_close(peer_c)
 
 ## -----------------------------------------------------------------------------
 # Create document and make changes
@@ -182,6 +197,8 @@ length(history)
 # Get changes between two points in history
 changes_since_v1 <- am_get_changes(doc_main, heads_v1)
 str(changes_since_v1)
+
+am_close(doc_main)
 
 ## -----------------------------------------------------------------------------
 # Server document that accumulates changes
@@ -221,6 +238,9 @@ am_apply_changes(server, client_changes)
 
 server[["local_cache"]]
 
+am_close(server)
+am_close(client)
+
 ## -----------------------------------------------------------------------------
 # Create two peers that will diverge
 peer_x <- am_create()
@@ -259,6 +279,9 @@ rounds
 # After sync, heads are identical again
 identical(am_get_heads(peer_x), am_get_heads(peer_y))
 
+am_close(peer_x)
+am_close(peer_y)
+
 ## -----------------------------------------------------------------------------
 # Create shared starting point
 base <- am_create()
@@ -289,6 +312,10 @@ editor1[["counter"]]
 
 # Status: Deterministic conflict resolution (one value wins)
 editor1[["status"]]
+
+am_close(base)
+am_close(editor1)
+am_close(editor2)
 
 ## -----------------------------------------------------------------------------
 # Strategy A: Frequent sync (lower latency, more overhead)
@@ -326,6 +353,11 @@ rounds
 length(am_save(doc_frequent))
 length(am_save(doc_batched))
 
+am_close(doc_frequent)
+am_close(peer_frequent)
+am_close(doc_batched)
+am_close(peer_batched)
+
 ## -----------------------------------------------------------------------------
 # Batch related changes, sync periodically
 doc_hybrid <- am_create()
@@ -345,6 +377,8 @@ am_commit(doc_hybrid, "Record login")
 
 # Sync again
 # result <- sync_with_server(doc_hybrid)
+
+am_close(doc_hybrid)
 
 ## -----------------------------------------------------------------------------
 # Without reusing sync state (inefficient)
@@ -394,6 +428,11 @@ am_sync_decode(peer_reuse, sync_state_peer, msg3)
 
 # Sync state remembers what was already exchanged
 
+am_close(doc_no_reuse)
+am_close(peer_no_reuse)
+am_close(doc_reuse)
+am_close(peer_reuse)
+
 ## -----------------------------------------------------------------------------
 # Compare efficiency of different approaches
 measure_sync <- function(n_changes, batch_size) {
@@ -422,11 +461,16 @@ measure_sync <- function(n_changes, batch_size) {
     syncs_performed <- syncs_performed + 1
   }
 
-  list(
+  result <- list(
     changes = changes_made,
     syncs = syncs_performed,
     size = length(am_save(doc))
   )
+
+  am_close(doc)
+  am_close(peer)
+
+  result
 }
 
 # No batching: commit and sync after every change

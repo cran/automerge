@@ -381,8 +381,11 @@ applications like shared notebooks or data pipelines</li>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>doc <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">print</span>(doc)</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; &lt;Automerge Document&gt;</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; Actor: cdbc15165fa10a43c33302f30c867429 </span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; Actor: cd29ba4e192b4dd980495040de6a3300 </span></span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; Root keys: 0</span></span></code></pre></div>
+<p>Note: When you’re done working with a document, you can explicitly
+free its resources with <code>am_close(doc)</code> if you don’t want to
+wait for garbage collection.</p>
 </div>
 <div id="adding-data---three-approaches" class="section level3">
 <h3>Adding Data - Three Approaches</h3>
@@ -423,7 +426,9 @@ R-idiomatic:</p>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="fu">am_commit</span>(<span class="st">&quot;Initial setup&quot;</span>)</span>
 <span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a></span>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>doc2 <span class="sc">|&gt;</span> <span class="fu">am_get</span>(AM_ROOT, <span class="st">&quot;name&quot;</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Bob&quot;</span></span></code></pre></div>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Bob&quot;</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="fu">am_close</span>(doc2)</span></code></pre></div>
 </div>
 </div>
 </div>
@@ -484,7 +489,10 @@ easier:</p>
 <span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a></span>
 <span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co"># Retrieve values with paths</span></span>
 <span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="fu">am_get_path</span>(doc4, <span class="fu">c</span>(<span class="st">&quot;config&quot;</span>, <span class="st">&quot;database&quot;</span>, <span class="st">&quot;host&quot;</span>))</span>
-<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt; [1] &quot;localhost&quot;</span></span></code></pre></div>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt; [1] &quot;localhost&quot;</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="fu">am_close</span>(doc3)</span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="fu">am_close</span>(doc4)</span></code></pre></div>
 </div>
 <div id="converting-r-data-structures" class="section level3">
 <h3>Converting R Data Structures</h3>
@@ -511,7 +519,9 @@ once:</p>
 <span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a></span>
 <span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co"># Easy access with paths</span></span>
 <span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="fu">am_get_path</span>(doc5, <span class="fu">c</span>(<span class="st">&quot;database&quot;</span>, <span class="st">&quot;port&quot;</span>))</span>
-<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt; [1] 5432</span></span></code></pre></div>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt; [1] 5432</span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="fu">am_close</span>(doc5)</span></code></pre></div>
 </div>
 </div>
 <div id="working-with-lists" class="section level2">
@@ -539,7 +549,9 @@ once:</p>
 <span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a><span class="fu">am_get</span>(doc6, items, <span class="dv">1</span>)</span>
 <span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a><span class="co">#&gt; [1] &quot;first&quot;</span></span>
 <span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a><span class="fu">am_get</span>(doc6, items, <span class="dv">2</span>)</span>
-<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="co">#&gt; [1] &quot;second&quot;</span></span></code></pre></div>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="co">#&gt; [1] &quot;second&quot;</span></span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a></span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="fu">am_close</span>(doc6)</span></code></pre></div>
 </div>
 <div id="special-automerge-types" class="section level2">
 <h2>Special Automerge Types</h2>
@@ -570,7 +582,9 @@ wins). For collaborative text editing, use text objects:</p>
 <span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a>old_text <span class="ot">&lt;-</span> <span class="fu">am_text_content</span>(text_obj)</span>
 <span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="fu">am_text_update</span>(text_obj, old_text, <span class="st">&quot;New content from user input&quot;</span>)</span>
 <span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="fu">am_text_content</span>(text_obj)</span>
-<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="co">#&gt; [1] &quot;New content from user input&quot;</span></span></code></pre></div>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="co">#&gt; [1] &quot;New content from user input&quot;</span></span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a></span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a><span class="fu">am_close</span>(doc7)</span></code></pre></div>
 </div>
 <div id="counters-for-crdt-counting" class="section level3">
 <h3>Counters (for CRDT Counting)</h3>
@@ -586,7 +600,9 @@ without conflicts:</p>
 <span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="fu">am_counter_increment</span>(doc8, AM_ROOT, <span class="st">&quot;score&quot;</span>, <span class="sc">-</span><span class="dv">3</span>)</span>
 <span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a></span>
 <span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>doc8[[<span class="st">&quot;score&quot;</span>]]</span>
-<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt; &lt;Automerge Counter: 12 &gt;</span></span></code></pre></div>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt; &lt;Automerge Counter: 12 &gt;</span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="fu">am_close</span>(doc8)</span></code></pre></div>
 </div>
 <div id="timestamps" class="section level3">
 <h3>Timestamps</h3>
@@ -597,7 +613,9 @@ without conflicts:</p>
 <span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="fu">am_put</span>(doc9, AM_ROOT, <span class="st">&quot;updated_at&quot;</span>, <span class="fu">Sys.time</span>())</span>
 <span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a></span>
 <span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>doc9[[<span class="st">&quot;created_at&quot;</span>]]</span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-01-28 00:24:46 GMT&quot;</span></span></code></pre></div>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-05 00:05:16 GMT&quot;</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="fu">am_close</span>(doc9)</span></code></pre></div>
 </div>
 </div>
 <div id="saving-and-loading-documents" class="section level2">
@@ -618,7 +636,11 @@ without conflicts:</p>
 <span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a></span>
 <span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a><span class="co"># Verify data persisted</span></span>
 <span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a>doc_from_file[[<span class="st">&quot;name&quot;</span>]]</span>
-<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Alice&quot;</span></span></code></pre></div>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Alice&quot;</span></span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a></span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a><span class="fu">am_close</span>(doc)</span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a><span class="fu">am_close</span>(doc_loaded)</span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a><span class="fu">am_close</span>(doc_from_file)</span></code></pre></div>
 </div>
 <div id="document-lifecycle" class="section level2">
 <h2>Document Lifecycle</h2>
@@ -645,7 +667,10 @@ without conflicts:</p>
 <span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="co"># Changes to fork don&#39;t affect original</span></span>
 <span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>doc11[[<span class="st">&quot;w&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">4</span></span>
 <span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>doc10[[<span class="st">&quot;w&quot;</span>]] <span class="co"># NULL - not in original</span></span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co">#&gt; NULL</span></span></code></pre></div>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co">#&gt; NULL</span></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="fu">am_close</span>(doc10)</span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="fu">am_close</span>(doc11)</span></code></pre></div>
 </div>
 <div id="merging-documents" class="section level3">
 <h3>Merging Documents</h3>
@@ -668,7 +693,10 @@ without conflicts:</p>
 <span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a>doc12[[<span class="st">&quot;value2&quot;</span>]]</span>
 <span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
 <span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a>doc12[[<span class="st">&quot;source&quot;</span>]] <span class="co"># One value wins deterministically for conflicting keys</span></span>
-<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a><span class="co">#&gt; [1] &quot;doc12&quot;</span></span></code></pre></div>
+<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a><span class="co">#&gt; [1] &quot;doc13&quot;</span></span>
+<span id="cb17-20"><a href="#cb17-20" tabindex="-1"></a></span>
+<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a><span class="fu">am_close</span>(doc12)</span>
+<span id="cb17-22"><a href="#cb17-22" tabindex="-1"></a><span class="fu">am_close</span>(doc13)</span></code></pre></div>
 </div>
 </div>
 <div id="basic-synchronization" class="section level2">
@@ -699,7 +727,10 @@ documents:</p>
 <span id="cb18-22"><a href="#cb18-22" tabindex="-1"></a>peer2[[<span class="st">&quot;data1&quot;</span>]]</span>
 <span id="cb18-23"><a href="#cb18-23" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span>
 <span id="cb18-24"><a href="#cb18-24" tabindex="-1"></a>peer2[[<span class="st">&quot;data2&quot;</span>]]</span>
-<span id="cb18-25"><a href="#cb18-25" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span></code></pre></div>
+<span id="cb18-25"><a href="#cb18-25" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
+<span id="cb18-26"><a href="#cb18-26" tabindex="-1"></a></span>
+<span id="cb18-27"><a href="#cb18-27" tabindex="-1"></a><span class="fu">am_close</span>(peer1)</span>
+<span id="cb18-28"><a href="#cb18-28" tabindex="-1"></a><span class="fu">am_close</span>(peer2)</span></code></pre></div>
 </div>
 <div id="next-steps" class="section level2">
 <h2>Next Steps</h2>

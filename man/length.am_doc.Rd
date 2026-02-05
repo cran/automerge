@@ -20,4 +20,6 @@ doc <- am_create()
 doc$a <- 1
 doc$b <- 2
 length(doc)  # 2
+am_close(doc)
+
 }

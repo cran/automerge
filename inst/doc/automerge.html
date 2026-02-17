@@ -381,7 +381,7 @@ applications like shared notebooks or data pipelines</li>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>doc <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">print</span>(doc)</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; &lt;Automerge Document&gt;</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; Actor: cd29ba4e192b4dd980495040de6a3300 </span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; Actor: acb6468ce6c241163022afacdb7dc5e6 </span></span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; Root keys: 0</span></span></code></pre></div>
 <p>Note: When you’re done working with a document, you can explicitly
 free its resources with <code>am_close(doc)</code> if you don’t want to
@@ -613,7 +613,7 @@ without conflicts:</p>
 <span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="fu">am_put</span>(doc9, AM_ROOT, <span class="st">&quot;updated_at&quot;</span>, <span class="fu">Sys.time</span>())</span>
 <span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a></span>
 <span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>doc9[[<span class="st">&quot;created_at&quot;</span>]]</span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-05 00:05:16 GMT&quot;</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-16 19:16:08 GMT&quot;</span></span>
 <span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a></span>
 <span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="fu">am_close</span>(doc9)</span></code></pre></div>
 </div>
@@ -641,96 +641,320 @@ without conflicts:</p>
 <span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a><span class="fu">am_close</span>(doc)</span>
 <span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a><span class="fu">am_close</span>(doc_loaded)</span>
 <span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a><span class="fu">am_close</span>(doc_from_file)</span></code></pre></div>
+<div id="incremental-save-and-load" class="section level3">
+<h3>Incremental Save and Load</h3>
+<p>For long-lived documents, incremental save/load allows exchanging
+only the changes since the last save, rather than the entire
+document:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>doc_inc <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>doc_inc[[<span class="st">&quot;v1&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;first&quot;</span></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="fu">am_commit</span>(doc_inc, <span class="st">&quot;Version 1&quot;</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co"># Full save (resets incremental tracking)</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>full_bytes <span class="ot">&lt;-</span> <span class="fu">am_save</span>(doc_inc)</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="co"># Make more changes</span></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>doc_inc[[<span class="st">&quot;v2&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;second&quot;</span></span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="fu">am_commit</span>(doc_inc, <span class="st">&quot;Version 2&quot;</span>)</span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="co"># Incremental save: only the new changes</span></span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a>inc_bytes <span class="ot">&lt;-</span> <span class="fu">am_save_incremental</span>(doc_inc)</span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a><span class="fu">length</span>(inc_bytes) <span class="sc">&lt;</span> <span class="fu">length</span>(full_bytes) <span class="co"># TRUE - much smaller</span></span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a><span class="co"># Apply incremental changes to another copy</span></span>
+<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a>doc_inc2 <span class="ot">&lt;-</span> <span class="fu">am_load</span>(full_bytes)</span>
+<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a><span class="fu">am_load_incremental</span>(doc_inc2, inc_bytes)</span>
+<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a>doc_inc2[[<span class="st">&quot;v2&quot;</span>]] <span class="co"># &quot;second&quot;</span></span>
+<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a><span class="co">#&gt; [1] &quot;second&quot;</span></span>
+<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a></span>
+<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a><span class="fu">am_close</span>(doc_inc)</span>
+<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a><span class="fu">am_close</span>(doc_inc2)</span></code></pre></div>
+</div>
 </div>
 <div id="document-lifecycle" class="section level2">
 <h2>Document Lifecycle</h2>
 <div id="committing-changes" class="section level3">
 <h3>Committing Changes</h3>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>doc10 <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co"># Make changes</span></span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>doc10[[<span class="st">&quot;x&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>doc10[[<span class="st">&quot;y&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">2</span></span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a></span>
-<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co"># Commit with message</span></span>
-<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="fu">am_commit</span>(doc10, <span class="st">&quot;Add x and y coordinates&quot;</span>)</span>
-<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a></span>
-<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="co"># Make more changes</span></span>
-<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a>doc10[[<span class="st">&quot;z&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">3</span></span>
-<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="fu">am_commit</span>(doc10, <span class="st">&quot;Add z coordinate&quot;</span>)</span></code></pre></div>
-</div>
-<div id="forking-documents" class="section level3">
-<h3>Forking Documents</h3>
-<p>Create independent copies:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>doc11 <span class="ot">&lt;-</span> <span class="fu">am_fork</span>(doc10)</span>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>doc10 <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
 <span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a></span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="co"># Changes to fork don&#39;t affect original</span></span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>doc11[[<span class="st">&quot;w&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">4</span></span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>doc10[[<span class="st">&quot;w&quot;</span>]] <span class="co"># NULL - not in original</span></span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co">#&gt; NULL</span></span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a></span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="fu">am_close</span>(doc10)</span>
-<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="fu">am_close</span>(doc11)</span></code></pre></div>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="co"># Make changes</span></span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>doc10[[<span class="st">&quot;x&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>doc10[[<span class="st">&quot;y&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="co"># Check how many uncommitted operations exist</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="fu">am_pending_ops</span>(doc10)</span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="co"># Commit with message</span></span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="fu">am_commit</span>(doc10, <span class="st">&quot;Add x and y coordinates&quot;</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="co"># Make more changes</span></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a>doc10[[<span class="st">&quot;z&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="fu">am_commit</span>(doc10, <span class="st">&quot;Add z coordinate&quot;</span>)</span></code></pre></div>
+</div>
+<div id="forking-and-cloning-documents" class="section level3">
+<h3>Forking and Cloning Documents</h3>
+<p>Create independent copies:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>doc11 <span class="ot">&lt;-</span> <span class="fu">am_fork</span>(doc10)</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="co"># Changes to fork don&#39;t affect original</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>doc11[[<span class="st">&quot;w&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">4</span></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>doc10[[<span class="st">&quot;w&quot;</span>]] <span class="co"># NULL - not in original</span></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="co">#&gt; NULL</span></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="co"># am_clone() is another way to create an independent deep copy</span></span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a>doc11b <span class="ot">&lt;-</span> <span class="fu">am_clone</span>(doc10)</span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="co"># Compare documents for equality</span></span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="fu">am_equal</span>(doc10, doc11b) <span class="co"># TRUE - same state</span></span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="fu">am_close</span>(doc10)</span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a><span class="fu">am_close</span>(doc11)</span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a><span class="fu">am_close</span>(doc11b)</span></code></pre></div>
 </div>
 <div id="merging-documents" class="section level3">
 <h3>Merging Documents</h3>
 <p>Merge changes from one document into another:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># Create two documents</span></span>
-<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>doc12 <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
-<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>doc12[[<span class="st">&quot;source&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;doc12&quot;</span></span>
-<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>doc12[[<span class="st">&quot;value1&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a></span>
-<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>doc13 <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
-<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>doc13[[<span class="st">&quot;source&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;doc13&quot;</span></span>
-<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a>doc13[[<span class="st">&quot;value2&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">200</span></span>
-<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a></span>
-<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="co"># Merge doc13 into doc12</span></span>
-<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="fu">am_merge</span>(doc12, doc13)</span>
-<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a></span>
-<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="co"># doc12 now has both values</span></span>
-<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a>doc12[[<span class="st">&quot;value1&quot;</span>]]</span>
-<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span>
-<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a>doc12[[<span class="st">&quot;value2&quot;</span>]]</span>
-<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
-<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a>doc12[[<span class="st">&quot;source&quot;</span>]] <span class="co"># One value wins deterministically for conflicting keys</span></span>
-<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a><span class="co">#&gt; [1] &quot;doc13&quot;</span></span>
-<span id="cb17-20"><a href="#cb17-20" tabindex="-1"></a></span>
-<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a><span class="fu">am_close</span>(doc12)</span>
-<span id="cb17-22"><a href="#cb17-22" tabindex="-1"></a><span class="fu">am_close</span>(doc13)</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># Create two documents</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>doc12 <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>doc12[[<span class="st">&quot;source&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;doc12&quot;</span></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>doc12[[<span class="st">&quot;value1&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>doc13 <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>doc13[[<span class="st">&quot;source&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;doc13&quot;</span></span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>doc13[[<span class="st">&quot;value2&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">200</span></span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="co"># Merge doc13 into doc12</span></span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a><span class="fu">am_merge</span>(doc12, doc13)</span>
+<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a><span class="co"># doc12 now has both values</span></span>
+<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a>doc12[[<span class="st">&quot;value1&quot;</span>]]</span>
+<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span>
+<span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a>doc12[[<span class="st">&quot;value2&quot;</span>]]</span>
+<span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
+<span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a>doc12[[<span class="st">&quot;source&quot;</span>]] <span class="co"># One value wins deterministically for conflicting keys</span></span>
+<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a><span class="co">#&gt; [1] &quot;doc12&quot;</span></span>
+<span id="cb18-20"><a href="#cb18-20" tabindex="-1"></a></span>
+<span id="cb18-21"><a href="#cb18-21" tabindex="-1"></a><span class="fu">am_close</span>(doc12)</span>
+<span id="cb18-22"><a href="#cb18-22" tabindex="-1"></a><span class="fu">am_close</span>(doc13)</span></code></pre></div>
 </div>
 </div>
 <div id="basic-synchronization" class="section level2">
 <h2>Basic Synchronization</h2>
 <p>Automerge’s key feature is automatic synchronization between
 documents:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># Create two peers</span></span>
-<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>peer1 <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
-<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>peer1[[<span class="st">&quot;edited_by&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;peer1&quot;</span></span>
-<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>peer1[[<span class="st">&quot;data1&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="fu">am_commit</span>(peer1)</span>
-<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a></span>
-<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>peer2 <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
-<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>peer2[[<span class="st">&quot;edited_by&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;peer2&quot;</span></span>
-<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a>peer2[[<span class="st">&quot;data2&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">200</span></span>
-<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="fu">am_commit</span>(peer2)</span>
-<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a></span>
-<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a><span class="co"># Bidirectional sync (documents modified in place)</span></span>
-<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a>rounds <span class="ot">&lt;-</span> <span class="fu">am_sync</span>(peer1, peer2)</span>
-<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a>rounds</span>
-<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a><span class="co">#&gt; [1] 4</span></span>
-<span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a></span>
-<span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a><span class="co"># Both documents now have all data</span></span>
-<span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a>peer1[[<span class="st">&quot;data1&quot;</span>]]</span>
-<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span>
-<span id="cb18-20"><a href="#cb18-20" tabindex="-1"></a>peer1[[<span class="st">&quot;data2&quot;</span>]]</span>
-<span id="cb18-21"><a href="#cb18-21" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
-<span id="cb18-22"><a href="#cb18-22" tabindex="-1"></a>peer2[[<span class="st">&quot;data1&quot;</span>]]</span>
-<span id="cb18-23"><a href="#cb18-23" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span>
-<span id="cb18-24"><a href="#cb18-24" tabindex="-1"></a>peer2[[<span class="st">&quot;data2&quot;</span>]]</span>
-<span id="cb18-25"><a href="#cb18-25" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
-<span id="cb18-26"><a href="#cb18-26" tabindex="-1"></a></span>
-<span id="cb18-27"><a href="#cb18-27" tabindex="-1"></a><span class="fu">am_close</span>(peer1)</span>
-<span id="cb18-28"><a href="#cb18-28" tabindex="-1"></a><span class="fu">am_close</span>(peer2)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="co"># Create two peers</span></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>peer1 <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>peer1[[<span class="st">&quot;edited_by&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;peer1&quot;</span></span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>peer1[[<span class="st">&quot;data1&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a><span class="fu">am_commit</span>(peer1)</span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>peer2 <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a>peer2[[<span class="st">&quot;edited_by&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;peer2&quot;</span></span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a>peer2[[<span class="st">&quot;data2&quot;</span>]] <span class="ot">&lt;-</span> <span class="dv">200</span></span>
+<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a><span class="fu">am_commit</span>(peer2)</span>
+<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" tabindex="-1"></a><span class="co"># Bidirectional sync (documents modified in place)</span></span>
+<span id="cb19-13"><a href="#cb19-13" tabindex="-1"></a>rounds <span class="ot">&lt;-</span> <span class="fu">am_sync</span>(peer1, peer2)</span>
+<span id="cb19-14"><a href="#cb19-14" tabindex="-1"></a>rounds</span>
+<span id="cb19-15"><a href="#cb19-15" tabindex="-1"></a><span class="co">#&gt; [1] 4</span></span>
+<span id="cb19-16"><a href="#cb19-16" tabindex="-1"></a></span>
+<span id="cb19-17"><a href="#cb19-17" tabindex="-1"></a><span class="co"># Both documents now have all data</span></span>
+<span id="cb19-18"><a href="#cb19-18" tabindex="-1"></a>peer1[[<span class="st">&quot;data1&quot;</span>]]</span>
+<span id="cb19-19"><a href="#cb19-19" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span>
+<span id="cb19-20"><a href="#cb19-20" tabindex="-1"></a>peer1[[<span class="st">&quot;data2&quot;</span>]]</span>
+<span id="cb19-21"><a href="#cb19-21" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
+<span id="cb19-22"><a href="#cb19-22" tabindex="-1"></a>peer2[[<span class="st">&quot;data1&quot;</span>]]</span>
+<span id="cb19-23"><a href="#cb19-23" tabindex="-1"></a><span class="co">#&gt; [1] 100</span></span>
+<span id="cb19-24"><a href="#cb19-24" tabindex="-1"></a>peer2[[<span class="st">&quot;data2&quot;</span>]]</span>
+<span id="cb19-25"><a href="#cb19-25" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
+<span id="cb19-26"><a href="#cb19-26" tabindex="-1"></a></span>
+<span id="cb19-27"><a href="#cb19-27" tabindex="-1"></a><span class="fu">am_close</span>(peer1)</span>
+<span id="cb19-28"><a href="#cb19-28" tabindex="-1"></a><span class="fu">am_close</span>(peer2)</span></code></pre></div>
+</div>
+<div id="inspecting-document-history" class="section level2">
+<h2>Inspecting Document History</h2>
+<p>Every change in an Automerge document carries metadata: who made it,
+when, what message was attached, and what it depended on. You can
+inspect this with the change introspection functions:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>doc14 <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>doc14[[<span class="st">&quot;title&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;My Project&quot;</span></span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="fu">am_commit</span>(doc14, <span class="st">&quot;Initial setup&quot;</span>, <span class="fu">Sys.time</span>())</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>doc14[[<span class="st">&quot;version&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;1.0&quot;</span></span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a><span class="fu">am_commit</span>(doc14, <span class="st">&quot;Set version&quot;</span>, <span class="fu">Sys.time</span>())</span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a></span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="co"># Get the full history (returns am_change objects directly)</span></span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a>history <span class="ot">&lt;-</span> <span class="fu">am_get_changes</span>(doc14)</span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Document has&quot;</span>, <span class="fu">length</span>(history), <span class="st">&quot;change(s)</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a><span class="co">#&gt; Document has 2 change(s)</span></span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a></span>
+<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a><span class="co"># Inspect each change - no parsing needed</span></span>
+<span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(history)) {</span>
+<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a>  <span class="fu">cat</span>(</span>
+<span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a>    <span class="fu">sprintf</span>(</span>
+<span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a>      <span class="st">&quot;Change %d: seq=%g, message=%s</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a>      i,</span>
+<span id="cb20-19"><a href="#cb20-19" tabindex="-1"></a>      <span class="fu">am_change_seq</span>(history[[i]]),</span>
+<span id="cb20-20"><a href="#cb20-20" tabindex="-1"></a>      <span class="fu">am_change_message</span>(history[[i]]) <span class="sc">%||%</span> <span class="st">&quot;(none)&quot;</span></span>
+<span id="cb20-21"><a href="#cb20-21" tabindex="-1"></a>    )</span>
+<span id="cb20-22"><a href="#cb20-22" tabindex="-1"></a>  )</span>
+<span id="cb20-23"><a href="#cb20-23" tabindex="-1"></a>}</span>
+<span id="cb20-24"><a href="#cb20-24" tabindex="-1"></a><span class="co">#&gt; Change 1: seq=1, message=Initial setup</span></span>
+<span id="cb20-25"><a href="#cb20-25" tabindex="-1"></a><span class="co">#&gt; Change 2: seq=2, message=Set version</span></span>
+<span id="cb20-26"><a href="#cb20-26" tabindex="-1"></a></span>
+<span id="cb20-27"><a href="#cb20-27" tabindex="-1"></a><span class="co"># Extract many fields from the same change</span></span>
+<span id="cb20-28"><a href="#cb20-28" tabindex="-1"></a>change <span class="ot">&lt;-</span> history[[<span class="dv">2</span>]]</span>
+<span id="cb20-29"><a href="#cb20-29" tabindex="-1"></a><span class="fu">am_change_hash</span>(change)     <span class="co"># Unique 32-byte hash</span></span>
+<span id="cb20-30"><a href="#cb20-30" tabindex="-1"></a><span class="co">#&gt;  [1] f4 bc bc 1b ea 17 8c 2b 14 78 d7 28 6e 25 1b b3 4f 71 e6 26 79 3d e4 f4 38</span></span>
+<span id="cb20-31"><a href="#cb20-31" tabindex="-1"></a><span class="co">#&gt; [26] b7 a7 1c 80 36 10 6e</span></span>
+<span id="cb20-32"><a href="#cb20-32" tabindex="-1"></a><span class="fu">am_change_message</span>(change)  <span class="co"># Commit message</span></span>
+<span id="cb20-33"><a href="#cb20-33" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Set version&quot;</span></span>
+<span id="cb20-34"><a href="#cb20-34" tabindex="-1"></a><span class="fu">am_change_time</span>(change)     <span class="co"># Timestamp</span></span>
+<span id="cb20-35"><a href="#cb20-35" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-16 19:16:08 GMT&quot;</span></span>
+<span id="cb20-36"><a href="#cb20-36" tabindex="-1"></a><span class="fu">am_change_seq</span>(change)      <span class="co"># Sequence number</span></span>
+<span id="cb20-37"><a href="#cb20-37" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
+<span id="cb20-38"><a href="#cb20-38" tabindex="-1"></a><span class="fu">am_change_actor_id</span>(change) <span class="co"># Who made the change</span></span>
+<span id="cb20-39"><a href="#cb20-39" tabindex="-1"></a><span class="co">#&gt;  [1] 07 7d 1d 94 59 9b d7 27 bc 91 a9 7b 79 b0 a3 9e</span></span>
+<span id="cb20-40"><a href="#cb20-40" tabindex="-1"></a><span class="fu">am_change_deps</span>(change)     <span class="co"># Parent change hashes</span></span>
+<span id="cb20-41"><a href="#cb20-41" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
+<span id="cb20-42"><a href="#cb20-42" tabindex="-1"></a><span class="co">#&gt;  [1] 55 d5 bb 52 88 2d 75 ba 0a 41 f0 5f 8d 32 fe c0 5e 53 9a 29 2c f9 c0 81 69</span></span>
+<span id="cb20-43"><a href="#cb20-43" tabindex="-1"></a><span class="co">#&gt; [26] 53 5b 62 80 a5 55 cd</span></span>
+<span id="cb20-44"><a href="#cb20-44" tabindex="-1"></a><span class="fu">am_change_size</span>(change)     <span class="co"># Number of operations</span></span>
+<span id="cb20-45"><a href="#cb20-45" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb20-46"><a href="#cb20-46" tabindex="-1"></a></span>
+<span id="cb20-47"><a href="#cb20-47" tabindex="-1"></a><span class="fu">am_close</span>(doc14)</span></code></pre></div>
+</div>
+<div id="time-travel-undoing-changes" class="section level2">
+<h2>Time Travel: Undoing Changes</h2>
+<p>Since Automerge preserves every committed change, you can “time
+travel” back to any point in the document’s history. The key is
+<code>am_fork(doc, heads)</code>, which creates an independent copy of
+the document at a specific historical state.</p>
+<div id="reverting-to-a-known-checkpoint" class="section level3">
+<h3>Reverting to a Known Checkpoint</h3>
+<p>If you know you might want to undo future changes, save the heads
+before making them:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>doc_tt <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>doc_tt[[<span class="st">&quot;title&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;My Report&quot;</span></span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a>doc_tt[[<span class="st">&quot;status&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;draft&quot;</span></span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="fu">am_commit</span>(doc_tt, <span class="st">&quot;Initial draft&quot;</span>)</span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a><span class="co"># Save a checkpoint before making further changes</span></span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>checkpoint <span class="ot">&lt;-</span> <span class="fu">am_get_heads</span>(doc_tt)</span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a><span class="co"># Continue editing</span></span>
+<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a>doc_tt[[<span class="st">&quot;status&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;review&quot;</span></span>
+<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a>doc_tt[[<span class="st">&quot;reviewer&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;Bob&quot;</span></span>
+<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a><span class="fu">am_commit</span>(doc_tt, <span class="st">&quot;Send for review&quot;</span>)</span>
+<span id="cb21-13"><a href="#cb21-13" tabindex="-1"></a></span>
+<span id="cb21-14"><a href="#cb21-14" tabindex="-1"></a>doc_tt[[<span class="st">&quot;status&quot;</span>]] <span class="ot">&lt;-</span> <span class="st">&quot;rejected&quot;</span></span>
+<span id="cb21-15"><a href="#cb21-15" tabindex="-1"></a><span class="fu">am_commit</span>(doc_tt, <span class="st">&quot;Rejected by reviewer&quot;</span>)</span>
+<span id="cb21-16"><a href="#cb21-16" tabindex="-1"></a></span>
+<span id="cb21-17"><a href="#cb21-17" tabindex="-1"></a><span class="co"># Oops - let&#39;s go back to the draft state</span></span>
+<span id="cb21-18"><a href="#cb21-18" tabindex="-1"></a>draft <span class="ot">&lt;-</span> <span class="fu">am_fork</span>(doc_tt, checkpoint)</span>
+<span id="cb21-19"><a href="#cb21-19" tabindex="-1"></a>draft[[<span class="st">&quot;status&quot;</span>]]    <span class="co"># &quot;draft&quot;</span></span>
+<span id="cb21-20"><a href="#cb21-20" tabindex="-1"></a><span class="co">#&gt; [1] &quot;draft&quot;</span></span>
+<span id="cb21-21"><a href="#cb21-21" tabindex="-1"></a>draft[[<span class="st">&quot;reviewer&quot;</span>]]  <span class="co"># NULL - this key didn&#39;t exist yet</span></span>
+<span id="cb21-22"><a href="#cb21-22" tabindex="-1"></a><span class="co">#&gt; NULL</span></span>
+<span id="cb21-23"><a href="#cb21-23" tabindex="-1"></a></span>
+<span id="cb21-24"><a href="#cb21-24" tabindex="-1"></a><span class="fu">am_close</span>(doc_tt)</span>
+<span id="cb21-25"><a href="#cb21-25" tabindex="-1"></a><span class="fu">am_close</span>(draft)</span></code></pre></div>
+</div>
+<div id="browsing-history-to-find-the-right-point" class="section level3">
+<h3>Browsing History to Find the Right Point</h3>
+<p>When you don’t have a saved checkpoint, browse the history to find
+the change you want to revert to:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>doc_hist <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>doc_hist[[<span class="st">&quot;data&quot;</span>]] <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">x =</span> <span class="dv">1</span>, <span class="at">y =</span> <span class="dv">2</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a><span class="fu">am_commit</span>(doc_hist, <span class="st">&quot;Add initial data&quot;</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a>doc_hist[[<span class="st">&quot;data&quot;</span>]] <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">x =</span> <span class="dv">1</span>, <span class="at">y =</span> <span class="dv">2</span>, <span class="at">z =</span> <span class="dv">3</span>)</span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a><span class="fu">am_commit</span>(doc_hist, <span class="st">&quot;Add z coordinate&quot;</span>)</span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a>doc_hist[[<span class="st">&quot;data&quot;</span>]] <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">x =</span> <span class="dv">10</span>, <span class="at">y =</span> <span class="dv">20</span>, <span class="at">z =</span> <span class="dv">30</span>)</span>
+<span id="cb22-10"><a href="#cb22-10" tabindex="-1"></a><span class="fu">am_commit</span>(doc_hist, <span class="st">&quot;Scale all values by 10&quot;</span>)</span>
+<span id="cb22-11"><a href="#cb22-11" tabindex="-1"></a></span>
+<span id="cb22-12"><a href="#cb22-12" tabindex="-1"></a><span class="co"># Review the history</span></span>
+<span id="cb22-13"><a href="#cb22-13" tabindex="-1"></a>history <span class="ot">&lt;-</span> <span class="fu">am_get_changes</span>(doc_hist)</span>
+<span id="cb22-14"><a href="#cb22-14" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(history)) {</span>
+<span id="cb22-15"><a href="#cb22-15" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  [%d] %s</span><span class="sc">\n</span><span class="st">&quot;</span>, i, <span class="fu">am_change_message</span>(history[[i]])))</span>
+<span id="cb22-16"><a href="#cb22-16" tabindex="-1"></a>}</span>
+<span id="cb22-17"><a href="#cb22-17" tabindex="-1"></a><span class="co">#&gt;   [1] Add initial data</span></span>
+<span id="cb22-18"><a href="#cb22-18" tabindex="-1"></a><span class="co">#&gt;   [2] Add z coordinate</span></span>
+<span id="cb22-19"><a href="#cb22-19" tabindex="-1"></a><span class="co">#&gt;   [3] Scale all values by 10</span></span>
+<span id="cb22-20"><a href="#cb22-20" tabindex="-1"></a></span>
+<span id="cb22-21"><a href="#cb22-21" tabindex="-1"></a><span class="co"># We want to undo the scaling - go back to change 2</span></span>
+<span id="cb22-22"><a href="#cb22-22" tabindex="-1"></a>target <span class="ot">&lt;-</span> history[[<span class="dv">2</span>]]</span>
+<span id="cb22-23"><a href="#cb22-23" tabindex="-1"></a>reverted <span class="ot">&lt;-</span> <span class="fu">am_fork</span>(doc_hist, <span class="fu">list</span>(<span class="fu">am_change_hash</span>(target)))</span>
+<span id="cb22-24"><a href="#cb22-24" tabindex="-1"></a><span class="fu">from_automerge</span>(reverted)</span>
+<span id="cb22-25"><a href="#cb22-25" tabindex="-1"></a><span class="co">#&gt; $data</span></span>
+<span id="cb22-26"><a href="#cb22-26" tabindex="-1"></a><span class="co">#&gt; $data$x</span></span>
+<span id="cb22-27"><a href="#cb22-27" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb22-28"><a href="#cb22-28" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb22-29"><a href="#cb22-29" tabindex="-1"></a><span class="co">#&gt; $data$y</span></span>
+<span id="cb22-30"><a href="#cb22-30" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
+<span id="cb22-31"><a href="#cb22-31" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb22-32"><a href="#cb22-32" tabindex="-1"></a><span class="co">#&gt; $data$z</span></span>
+<span id="cb22-33"><a href="#cb22-33" tabindex="-1"></a><span class="co">#&gt; [1] 3</span></span>
+<span id="cb22-34"><a href="#cb22-34" tabindex="-1"></a></span>
+<span id="cb22-35"><a href="#cb22-35" tabindex="-1"></a><span class="fu">am_close</span>(doc_hist)</span>
+<span id="cb22-36"><a href="#cb22-36" tabindex="-1"></a><span class="fu">am_close</span>(reverted)</span></code></pre></div>
+</div>
+<div id="continuing-from-a-historical-state" class="section level3">
+<h3>Continuing from a Historical State</h3>
+<p>A forked document is fully independent, so you can make new changes
+from the historical state without affecting the original:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>doc_branch <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>doc_branch[[<span class="st">&quot;text&quot;</span>]] <span class="ot">&lt;-</span> <span class="fu">am_text</span>(<span class="st">&quot;Hello World&quot;</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a><span class="fu">am_commit</span>(doc_branch, <span class="st">&quot;Initial text&quot;</span>)</span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a><span class="co"># Save checkpoint</span></span>
+<span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a>v1_heads <span class="ot">&lt;-</span> <span class="fu">am_get_heads</span>(doc_branch)</span>
+<span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="#cb23-8" tabindex="-1"></a>text_obj <span class="ot">&lt;-</span> <span class="fu">am_get</span>(doc_branch, AM_ROOT, <span class="st">&quot;text&quot;</span>)</span>
+<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a><span class="fu">am_text_update</span>(text_obj, <span class="st">&quot;Hello World&quot;</span>, <span class="st">&quot;Hello World - CONFIDENTIAL&quot;</span>)</span>
+<span id="cb23-10"><a href="#cb23-10" tabindex="-1"></a><span class="fu">am_commit</span>(doc_branch, <span class="st">&quot;Add confidential marker&quot;</span>)</span>
+<span id="cb23-11"><a href="#cb23-11" tabindex="-1"></a></span>
+<span id="cb23-12"><a href="#cb23-12" tabindex="-1"></a><span class="co"># Create a public version from v1 and take it in a different direction</span></span>
+<span id="cb23-13"><a href="#cb23-13" tabindex="-1"></a>public <span class="ot">&lt;-</span> <span class="fu">am_fork</span>(doc_branch, v1_heads)</span>
+<span id="cb23-14"><a href="#cb23-14" tabindex="-1"></a>public_text <span class="ot">&lt;-</span> <span class="fu">am_get</span>(public, AM_ROOT, <span class="st">&quot;text&quot;</span>)</span>
+<span id="cb23-15"><a href="#cb23-15" tabindex="-1"></a><span class="fu">am_text_update</span>(public_text, <span class="st">&quot;Hello World&quot;</span>, <span class="st">&quot;Hello World - Public Draft&quot;</span>)</span>
+<span id="cb23-16"><a href="#cb23-16" tabindex="-1"></a><span class="fu">am_commit</span>(public, <span class="st">&quot;Public version&quot;</span>)</span>
+<span id="cb23-17"><a href="#cb23-17" tabindex="-1"></a></span>
+<span id="cb23-18"><a href="#cb23-18" tabindex="-1"></a><span class="fu">am_text_content</span>(public_text) <span class="co"># &quot;Hello World - Public Draft&quot;</span></span>
+<span id="cb23-19"><a href="#cb23-19" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Hello World - Public Draft&quot;</span></span>
+<span id="cb23-20"><a href="#cb23-20" tabindex="-1"></a></span>
+<span id="cb23-21"><a href="#cb23-21" tabindex="-1"></a><span class="fu">am_close</span>(doc_branch)</span>
+<span id="cb23-22"><a href="#cb23-22" tabindex="-1"></a><span class="fu">am_close</span>(public)</span></code></pre></div>
+</div>
+</div>
+<div id="cursor-persistence" class="section level2">
+<h2>Cursor Persistence</h2>
+<p>Cursors can be serialized and restored across R sessions, which is
+useful for saving editor state:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a>doc15 <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a><span class="fu">am_put</span>(doc15, AM_ROOT, <span class="st">&quot;content&quot;</span>, <span class="fu">am_text</span>(<span class="st">&quot;Hello World&quot;</span>))</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>text_obj <span class="ot">&lt;-</span> <span class="fu">am_get</span>(doc15, AM_ROOT, <span class="st">&quot;content&quot;</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a><span class="co"># Create a cursor and serialize it</span></span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a>cursor <span class="ot">&lt;-</span> <span class="fu">am_cursor</span>(text_obj, <span class="dv">5</span>)</span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a>cursor_bytes <span class="ot">&lt;-</span> <span class="fu">am_cursor_to_bytes</span>(cursor)</span>
+<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a>cursor_str <span class="ot">&lt;-</span> <span class="fu">am_cursor_to_string</span>(cursor)</span>
+<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a></span>
+<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a><span class="co"># Later: restore the cursor</span></span>
+<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a>restored <span class="ot">&lt;-</span> <span class="fu">am_cursor_from_bytes</span>(cursor_bytes, text_obj)</span>
+<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a><span class="fu">am_cursor_position</span>(restored)  <span class="co"># 5</span></span>
+<span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a><span class="co">#&gt; [1] 5</span></span>
+<span id="cb24-14"><a href="#cb24-14" tabindex="-1"></a></span>
+<span id="cb24-15"><a href="#cb24-15" tabindex="-1"></a><span class="co"># Compare cursors</span></span>
+<span id="cb24-16"><a href="#cb24-16" tabindex="-1"></a><span class="fu">am_cursor_equal</span>(cursor, restored)  <span class="co"># TRUE</span></span>
+<span id="cb24-17"><a href="#cb24-17" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb24-18"><a href="#cb24-18" tabindex="-1"></a></span>
+<span id="cb24-19"><a href="#cb24-19" tabindex="-1"></a><span class="fu">am_close</span>(doc15)</span></code></pre></div>
 </div>
 <div id="next-steps" class="section level2">
 <h2>Next Steps</h2>
@@ -745,17 +969,17 @@ one-page guide to all functions</li>
 </div>
 <div id="getting-help" class="section level2">
 <h2>Getting Help</h2>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="co"># Function help</span></span>
-<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>?am_create</span>
-<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>?am_put</span>
-<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>?am_sync</span>
-<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a></span>
-<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a><span class="co"># Package help</span></span>
-<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>?automerge</span>
-<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a><span class="fu">help</span>(<span class="at">package =</span> <span class="st">&quot;automerge&quot;</span>)</span>
-<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a></span>
-<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a><span class="co"># All vignettes</span></span>
-<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a><span class="fu">vignette</span>(<span class="at">package =</span> <span class="st">&quot;automerge&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="co"># Function help</span></span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>?am_create</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>?am_put</span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>?am_sync</span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a><span class="co"># Package help</span></span>
+<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a>?automerge</span>
+<span id="cb25-8"><a href="#cb25-8" tabindex="-1"></a><span class="fu">help</span>(<span class="at">package =</span> <span class="st">&quot;automerge&quot;</span>)</span>
+<span id="cb25-9"><a href="#cb25-9" tabindex="-1"></a></span>
+<span id="cb25-10"><a href="#cb25-10" tabindex="-1"></a><span class="co"># All vignettes</span></span>
+<span id="cb25-11"><a href="#cb25-11" tabindex="-1"></a><span class="fu">vignette</span>(<span class="at">package =</span> <span class="st">&quot;automerge&quot;</span>)</span></code></pre></div>
 </div>
 
 

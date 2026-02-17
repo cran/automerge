@@ -23,18 +23,28 @@ knitr::opts_chunk$set(
 # bytes <- am_save(doc) # Save to bytes
 # doc <- am_load(bytes) # Load from bytes
 # 
-# # Actor ID
+# # Actor ID (document-bound)
 # actor <- am_get_actor(doc) # Get actor ID (raw bytes)
 # actor_hex <- am_get_actor_hex(doc) # Get actor ID as hex string
 # am_set_actor(doc, actor_hex) # Set actor ID (raw, hex, or NULL)
 # 
-# # Fork/Merge
+# # Fork/Merge/Clone
 # doc2 <- am_fork(doc) # Create independent copy
+# doc3 <- am_clone(doc) # Deep copy (independent document)
 # am_merge(doc, doc2) # Merge doc2 into doc1
+# 
+# # Compare documents
+# am_equal(doc, doc2) # TRUE if same state
 # 
 # # Transactions
 # am_commit(doc, "message") # Commit changes
 # am_rollback(doc) # Cancel pending changes
+# am_pending_ops(doc) # Number of uncommitted operations
+# am_commit_empty(doc, "checkpoint") # Create empty change (bookkeeping)
+# 
+# # Incremental save/load
+# inc <- am_save_incremental(doc) # Only changes since last save
+# am_load_incremental(doc, inc) # Apply incremental changes
 # 
 # # Cleanup
 # am_close(doc) # Explicitly free resources (optional)
@@ -57,6 +67,13 @@ knitr::opts_chunk$set(
 # values <- am_values(doc, AM_ROOT) # Get all values
 # n <- length(doc) # Number of keys
 # n <- am_length(doc, AM_ROOT) # Functional version
+# items <- am_items(doc, AM_ROOT) # All key-value entries
+# 
+# # All conflicting values for a key (after concurrent edits)
+# conflicts <- am_map_get_all(doc, AM_ROOT, "key")
+# 
+# # Range of entries by key (alphabetical)
+# entries <- am_map_range(doc, AM_ROOT, "a", "m")
 
 ## -----------------------------------------------------------------------------
 # # Automatic recursive conversion (recommended)
@@ -95,6 +112,13 @@ knitr::opts_chunk$set(
 # 
 # # Introspection
 # n <- am_length(doc, items) # List length
+# items_entries <- am_items(doc, items) # All index-value entries
+# 
+# # All conflicting values at index (after concurrent edits)
+# conflicts <- am_list_get_all(doc, items, 1)
+# 
+# # Subrange (1-based indexing)
+# sub <- am_list_range(doc, items, 2, 4)
 
 ## -----------------------------------------------------------------------------
 # # Text objects use 0-based inter-character positions
@@ -115,13 +139,25 @@ knitr::opts_chunk$set(
 # am_text_update(text_obj, old_text, "Hello Universe") # Computes and applies diff
 # 
 # # Cursors (stable positions)
-# cursor <- am_cursor(text_obj, 5) # Create cursor at position 5
+# cursor <- am_cursor(text_obj, 5) # Create at position 5
 # pos <- am_cursor_position(cursor) # Get current position
+# cursor <- am_cursor(text_obj, 5, heads) # Create at historical state
+# pos <- am_cursor_position(cursor, heads) # Position at historical state
+# 
+# # Cursor serialization (persistence across sessions)
+# bytes <- am_cursor_to_bytes(cursor) # Serialize to raw
+# cursor <- am_cursor_from_bytes(bytes, text_obj) # Restore from raw
+# str <- am_cursor_to_string(cursor) # Serialize to string
+# cursor <- am_cursor_from_string(str, text_obj) # Restore from string
+# am_cursor_equal(cursor1, cursor2) # Compare cursors
 # 
 # # Marks (formatting)
 # am_mark(text_obj, 0, 5, "bold", TRUE, expand = "none")
 # marks <- am_marks(text_obj) # Get all marks
+# marks <- am_marks(text_obj, heads) # Marks at historical state
 # marks_at <- am_marks_at(text_obj, 2) # Marks at position 2
+# marks_at <- am_marks_at(text_obj, 2, heads) # At position, historical state
+# am_mark_clear(text_obj, 0, 5, "bold") # Remove a mark from range
 
 ## -----------------------------------------------------------------------------
 # # NULL
@@ -169,11 +205,15 @@ knitr::opts_chunk$set(
 
 ## -----------------------------------------------------------------------------
 # # Create sync state
-# sync_state <- am_sync_state_new()
+# sync_state <- am_sync_state()
 # 
 # # Encode/decode messages
 # msg <- am_sync_encode(doc, sync_state)
 # am_sync_decode(doc, sync_state, msg)
+# 
+# # Serialize/restore sync state (for persistent connections)
+# sync_bytes <- am_sync_state_encode(sync_state)
+# sync_state <- am_sync_state_decode(sync_bytes)
 # 
 # # Manual sync loop
 # repeat {
@@ -191,18 +231,45 @@ knitr::opts_chunk$set(
 # }
 
 ## -----------------------------------------------------------------------------
-# # Get heads
+# # Get heads (fingerprint of current state)
 # heads <- am_get_heads(doc)
 # 
-# # Get changes
-# changes <- am_get_changes(doc, NULL) # All changes
-# changes <- am_get_changes(doc, heads) # Since specific heads
+# # Get changes (returns am_change objects)
+# changes <- am_get_changes(doc, NULL)  # All changes
+# changes <- am_get_changes(doc, heads) # Changes since heads (i.e. none)
+# 
+# # Typical pattern: remember a checkpoint, then get new changes later
+# checkpoint <- am_get_heads(doc)
+# am_put(doc, AM_ROOT, "new_key", "new_value")
+# am_commit(doc, "Add new_key")
+# new_changes <- am_get_changes(doc, checkpoint) # Only the new commit
 # 
 # # Apply changes
 # am_apply_changes(doc, changes)
 # 
-# # Full history
-# history <- am_get_history(doc)
+# # Full history (returns am_change objects)
+# history <- am_get_changes(doc)
+# 
+# # Change introspection
+# change <- history[[1]]
+# hash <- am_change_hash(change) # 32-byte hash
+# msg <- am_change_message(change) # Commit message or NULL
+# time <- am_change_time(change) # POSIXct timestamp
+# actor <- am_change_actor_id(change) # Actor ID (raw bytes)
+# seq <- am_change_seq(change) # Sequence number (double)
+# deps <- am_change_deps(change) # List of parent hashes
+# size <- am_change_size(change) # Number of operations
+# bytes <- am_change_to_bytes(change) # Serialize to raw
+# 
+# # Deserialize from raw bytes (for stored changes)
+# change <- am_change_from_bytes(bytes)
+# 
+# # Decompose saved document into individual changes
+# changes <- am_load_changes(bytes) # From am_save() output
+# 
+# # Check document completeness
+# missing <- am_get_missing_deps(doc)
+# missing <- am_get_missing_deps(doc, heads) # With specific heads
 
 ## -----------------------------------------------------------------------------
 # # R → Automerge

@@ -322,9 +322,18 @@ test_that("Resource cleanup after errors", {
 
 # Sync validation errors ------------------------------------------------------
 
+test_that("Invalidated sync state is detected", {
+  sync_state <- am_sync_state()
+  invalid_sync <- unserialize(serialize(sync_state, NULL))
+
+  expect_snapshot(error = TRUE, {
+    am_sync_state_encode(invalid_sync)
+  })
+})
+
 test_that("am_sync_decode validates message type", {
   doc <- am_create()
-  sync_state <- am_sync_state_new()
+  sync_state <- am_sync_state()
 
   expect_snapshot(error = TRUE, {
     am_sync_decode(doc, sync_state, "not raw")

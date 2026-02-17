@@ -3,7 +3,7 @@ use crate::error::AutomergeError;
 use crate::legacy as amp;
 use crate::op_set2::ActorIdx;
 use rand::{
-    distributions::{Distribution, Standard},
+    distr::{Distribution, StandardUniform},
     Rng,
 };
 use serde::{Deserialize, Serialize};
@@ -41,8 +41,28 @@ const HEAD_STR: &str = "_head";
 // Note that change encoding relies on the Ord implementation for the ActorId being implemented in
 // terms of the lexicographic ordering of the underlying bytes. Be aware of this if you are
 // changing the ActorId implementation in ways which might affect the Ord implementation
-#[derive(Eq, PartialEq, Hash, Clone, PartialOrd, Ord)]
+#[derive(Hash, Clone)]
 pub struct ActorId(TinyVec<[u8; 16]>);
+
+impl PartialEq for ActorId {
+    fn eq(&self, other: &Self) -> bool {
+        self.to_bytes() == other.to_bytes()
+    }
+}
+
+impl Eq for ActorId {}
+
+impl PartialOrd for ActorId {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for ActorId {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.to_bytes().cmp(other.to_bytes())
+    }
+}
 
 impl fmt::Debug for ActorId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -52,7 +72,7 @@ impl fmt::Debug for ActorId {
     }
 }
 
-impl Distribution<ActorId> for Standard {
+impl Distribution<ActorId> for StandardUniform {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> ActorId {
         let mut bytes = [0u8; 16];
         rng.fill(&mut bytes);
@@ -63,10 +83,11 @@ impl Distribution<ActorId> for Standard {
 impl ActorId {
     pub fn random() -> ActorId {
         let mut buf = [0u8; 16];
-        getrandom::getrandom(&mut buf).expect("random number generator failed");
+        getrandom::fill(&mut buf).expect("random number generator failed");
         ActorId(TinyVec::from(buf))
     }
 
+    #[inline(never)]
     pub fn to_bytes(&self) -> &[u8] {
         &self.0
     }

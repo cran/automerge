@@ -25,6 +25,10 @@ am_merge(doc1, doc2)
 # One value wins (deterministic, all replicas agree)
 doc1[["name"]]
 
+# To see all conflicting values (not just the winner), use am_map_get_all()
+all_values <- am_map_get_all(doc1, AM_ROOT, "name")
+length(all_values) # 2 - both "Alice Smith" and "Alice Johnson"
+
 am_close(doc1)
 am_close(doc2)
 
@@ -79,6 +83,58 @@ for (i in seq_len(am_length(doc5, items5))) {
 
 am_close(doc5)
 am_close(doc6)
+
+## -----------------------------------------------------------------------------
+# Map conflict: two peers edit the same key concurrently
+doc_c1 <- am_create()
+doc_c1[["status"]] <- "draft"
+am_commit(doc_c1)
+
+doc_c2 <- am_fork(doc_c1)
+
+doc_c1[["status"]] <- "published"
+am_commit(doc_c1)
+doc_c2[["status"]] <- "archived"
+am_commit(doc_c2)
+
+am_merge(doc_c1, doc_c2)
+
+# am_get returns the winner
+am_get(doc_c1, AM_ROOT, "status")
+
+# am_map_get_all returns all conflicting values
+all_statuses <- am_map_get_all(doc_c1, AM_ROOT, "status")
+length(all_statuses) # 2
+all_statuses
+
+## -----------------------------------------------------------------------------
+# List conflict: two peers update the same index
+doc_l1 <- am_create()
+am_put(doc_l1, AM_ROOT, "scores", AM_OBJ_TYPE_LIST)
+scores <- am_get(doc_l1, AM_ROOT, "scores")
+am_insert(doc_l1, scores, 1, 100L)
+am_commit(doc_l1)
+
+doc_l2 <- am_fork(doc_l1)
+scores2 <- am_get(doc_l2, AM_ROOT, "scores")
+
+am_put(doc_l1, scores, 1, 200L)
+am_commit(doc_l1)
+am_put(doc_l2, scores2, 1, 300L)
+am_commit(doc_l2)
+
+am_merge(doc_l1, doc_l2)
+
+# Winner
+am_get(doc_l1, scores, 1)
+
+# All conflicting values
+am_list_get_all(doc_l1, scores, 1)
+
+am_close(doc_c1)
+am_close(doc_c2)
+am_close(doc_l1)
+am_close(doc_l2)
 
 ## -----------------------------------------------------------------------------
 doc7 <- am_create()
@@ -190,6 +246,17 @@ am_text_splice(text17, 0, 0, "Hi ")
 new_pos <- am_cursor_position(cursor)
 new_pos # Cursor moved with text from original position 6
 
+## -----------------------------------------------------------------------------
+# Serialize to bytes or string
+cursor_bytes <- am_cursor_to_bytes(cursor)
+cursor_str <- am_cursor_to_string(cursor)
+
+# Restore later (requires the text object)
+restored <- am_cursor_from_bytes(cursor_bytes, text17)
+am_cursor_position(restored)
+
+am_cursor_equal(cursor, restored) # TRUE
+
 am_close(doc17)
 
 ## -----------------------------------------------------------------------------
@@ -212,6 +279,19 @@ marks_at_pos <- am_marks_at(text18, 2) # Position 2 (in "Hello")
 str(marks_at_pos)
 
 am_close(doc18)
+
+## -----------------------------------------------------------------------------
+doc18b <- am_create()
+am_put(doc18b, AM_ROOT, "text", am_text("Hello World"))
+text18b <- am_get(doc18b, AM_ROOT, "text")
+
+am_mark(text18b, 0, 11, "bold", TRUE)
+length(am_marks(text18b)) # 1
+
+am_mark_clear(text18b, 0, 11, "bold")
+length(am_marks(text18b)) # 0
+
+am_close(doc18b)
 
 ## -----------------------------------------------------------------------------
 doc19 <- am_create()
@@ -333,6 +413,10 @@ am_merge(doc26, doc27)
 
 # One will win - application should handle both states sensibly
 doc26[["status"]] # Should be prepared for either 'published' or 'archived'
+
+# Use am_equal() to check if two documents have converged
+am_merge(doc27, doc26)
+am_equal(doc26, doc27) # TRUE - both have the same state now
 
 am_close(doc26)
 am_close(doc27)

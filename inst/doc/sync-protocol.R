@@ -69,8 +69,8 @@ peer4[["source"]] <- "peer4"
 am_commit(peer4)
 
 # Each peer maintains its own sync state
-sync3 <- am_sync_state_new()
-sync4 <- am_sync_state_new()
+sync3 <- am_sync_state()
+sync4 <- am_sync_state()
 
 # Exchange messages until converged
 round <- 0
@@ -142,18 +142,20 @@ peer_b[["v3"]]
 
 
 ## -----------------------------------------------------------------------------
-# Save individual changes to files
+# Save individual changes to files (serialize to raw bytes first)
 temp_dir <- tempdir()
 for (i in seq_along(changes)) {
   change_file <- file.path(temp_dir, sprintf("change_%03d.bin", i))
-  writeBin(changes[[i]], change_file)
+  writeBin(am_change_to_bytes(changes[[i]]), change_file)
 }
 
-# Later: load and apply changes
+# Later: load changes and restore as am_change objects
 loaded_changes <- list()
 for (i in seq_along(changes)) {
   change_file <- file.path(temp_dir, sprintf("change_%03d.bin", i))
-  loaded_changes[[i]] <- readBin(change_file, "raw", file.size(change_file))
+  loaded_changes[[i]] <- am_change_from_bytes(
+    readBin(change_file, "raw", file.size(change_file))
+  )
 }
 
 # Apply loaded changes to a peer
@@ -167,6 +169,33 @@ am_close(base_doc)
 am_close(peer_a)
 am_close(peer_b)
 am_close(peer_c)
+
+## -----------------------------------------------------------------------------
+# Save a document with multiple commits
+doc_decompose <- am_create()
+doc_decompose[["x"]] <- 1
+am_commit(doc_decompose, "Add x")
+doc_decompose[["y"]] <- 2
+am_commit(doc_decompose, "Add y")
+saved_bytes <- am_save(doc_decompose)
+
+# Extract individual changes from the saved bytes
+extracted_changes <- am_load_changes(saved_bytes)
+length(extracted_changes)
+
+# Inspect each change
+for (ch in extracted_changes) {
+  cat(am_change_message(ch), "\n")
+}
+
+# Apply selectively to a new document
+doc_selective <- am_create()
+am_apply_changes(doc_selective, extracted_changes[1]) # Only first change
+doc_selective[["x"]]
+doc_selective[["y"]] # NULL - second change not applied
+
+am_close(doc_decompose)
+am_close(doc_selective)
 
 ## -----------------------------------------------------------------------------
 # Create document and make changes
@@ -187,12 +216,38 @@ heads_v2 <- am_get_heads(doc_main)
 identical(heads_v1, heads_v2)
 
 ## -----------------------------------------------------------------------------
+doc_check <- am_create()
+doc_check[["data"]] <- "complete"
+am_commit(doc_check)
+
+# A complete document has no missing deps
+missing <- am_get_missing_deps(doc_check)
+length(missing) # 0
+
+am_close(doc_check)
+
+## -----------------------------------------------------------------------------
 # Get full change history
-history <- am_get_history(doc_main)
+history <- am_get_changes(doc_main)
 length(history)
 
-# History includes all commits ever made
-# Each entry contains metadata about a commit
+# Inspect individual changes (am_change objects returned directly)
+for (i in seq_along(history)) {
+  cat(sprintf(
+    "  [%d] seq=%g message=%s\n",
+    i,
+    am_change_seq(history[[i]]),
+    am_change_message(history[[i]]) %||% "(none)"
+  ))
+}
+
+# Extract multiple fields from the same change
+change <- history[[2]]
+am_change_hash(change)     # Unique hash
+am_change_actor_id(change) # Who made this change
+am_change_time(change)     # When
+am_change_deps(change)     # Parent changes
+am_change_size(change)     # Number of operations
 
 # Get changes between two points in history
 changes_since_v1 <- am_get_changes(doc_main, heads_v1)
@@ -406,8 +461,8 @@ doc_reuse[["v1"]] <- 1
 am_commit(doc_reuse)
 
 peer_reuse <- am_create()
-sync_state_local <- am_sync_state_new()
-sync_state_peer <- am_sync_state_new()
+sync_state_local <- am_sync_state()
+sync_state_peer <- am_sync_state()
 
 # Manual sync with persistent state
 msg1 <- am_sync_encode(doc_reuse, sync_state_local)
@@ -432,6 +487,15 @@ am_close(doc_no_reuse)
 am_close(peer_no_reuse)
 am_close(doc_reuse)
 am_close(peer_reuse)
+
+## -----------------------------------------------------------------------------
+# After initial sync, save sync state for later reuse
+sync_bytes <- am_sync_state_encode(sync_state_local)
+
+# Later (e.g., after restarting R):
+restored_sync <- am_sync_state_decode(sync_bytes)
+
+# Continue syncing efficiently with the restored state
 
 ## -----------------------------------------------------------------------------
 # Compare efficiency of different approaches

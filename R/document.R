@@ -53,6 +53,7 @@ am_close <- function(doc) {
 #' @examples
 #' # Create document with random actor ID
 #' doc1 <- am_create()
+#' doc1
 #'
 #' # Create with custom hex actor ID
 #' doc2 <- am_create("0123456789abcdef0123456789abcdef")
@@ -84,6 +85,7 @@ am_create <- function(actor_id = NULL) {
 #' @examples
 #' doc <- am_create()
 #' bytes <- am_save(doc)
+#' bytes
 #'
 #' # Save to file
 #' file <- tempfile()
@@ -113,6 +115,7 @@ am_save <- function(doc) {
 #' doc1 <- am_create()
 #' bytes <- am_save(doc1)
 #' doc2 <- am_load(bytes)
+#' doc2
 #'
 #' # Save to and load from file
 #' doc3 <- am_create()
@@ -136,6 +139,13 @@ am_load <- function(data) {
 #' Creates a fork of an Automerge document at the current heads or
 #' at a specific point in history. The forked document shares history
 #' with the original up to the fork point but can diverge afterwards.
+#' The fork is assigned a new actor ID, so changes made on the fork
+#' are distinguishable from the original when merged or synced.
+#'
+#' Use `am_fork()` when creating independent branches of a document
+#' that may later be merged or synced. Use [am_clone()] instead if you
+#' need an exact copy that preserves the original actor ID (e.g. for
+#' archival or snapshotting purposes).
 #'
 #' @param doc An Automerge document
 #' @param heads Optional list of change hashes to fork at a specific point in
@@ -144,10 +154,15 @@ am_load <- function(data) {
 #'
 #' @return A new Automerge document (fork of the original)
 #'
+#' @seealso [am_clone()] for an exact copy preserving the actor ID
 #' @export
 #' @examples
 #' doc1 <- am_create()
 #' doc2 <- am_fork(doc1)
+#' doc2
+#'
+#' # Fork has a different actor ID
+#' am_get_actor_hex(doc1) != am_get_actor_hex(doc2) # TRUE
 #'
 #' # Now doc1 and doc2 can diverge independently
 #' am_close(doc1)
@@ -205,6 +220,7 @@ am_merge <- function(doc, other) {
 #' @examples
 #' doc <- am_create()
 #' actor <- am_get_actor(doc)
+#' actor
 #'
 #' # Use am_get_actor_hex() for display
 #' actor_hex <- am_get_actor_hex(doc)
@@ -230,7 +246,7 @@ am_get_actor <- function(doc) {
 #' @examples
 #' doc <- am_create()
 #' actor_hex <- am_get_actor_hex(doc)
-#' cat("Actor ID:", actor_hex, "\n")
+#' actor_hex
 #'
 #' am_close(doc)
 #'
@@ -331,8 +347,7 @@ am_rollback <- function(doc) {
 #'
 #' @param doc An Automerge document
 #'
-#' @return A raw vector containing the serialized change, or `NULL` if no
-#'   local changes have been made.
+#' @return An `am_change` object, or `NULL` if no local changes have been made.
 #'
 #' @export
 #' @examples
@@ -347,7 +362,8 @@ am_rollback <- function(doc) {
 #'
 #' # Now we have a local change
 #' change <- am_get_last_local_change(doc)
-#' str(change)  # Raw vector
+#' change
+#' am_change_message(change)  # "Add key"
 #'
 #' am_close(doc)
 #'
@@ -358,13 +374,14 @@ am_get_last_local_change <- function(doc) {
 #' Get a specific change by its hash
 #'
 #' Retrieves a change from the document's history by its unique hash identifier.
-#' The hash is typically obtained from `am_get_heads()` or `am_get_changes()`.
+#' The hash is typically obtained from `am_get_heads()` or
+#' `am_change_hash()`.
 #'
 #' @param doc An Automerge document
 #' @param hash A raw vector containing the change hash (must be exactly 32 bytes)
 #'
-#' @return A raw vector containing the serialized change, or `NULL` if the
-#'   change hash is not found in the document.
+#' @return An `am_change` object, or `NULL` if the change hash is not found
+#'   in the document.
 #'
 #' @export
 #' @examples
@@ -378,7 +395,8 @@ am_get_last_local_change <- function(doc) {
 #'
 #' # Retrieve the change by its hash
 #' change <- am_get_change_by_hash(doc, head_hash)
-#' str(change)  # Raw vector
+#' change
+#' am_change_message(change)  # "Add key"
 #'
 #' am_close(doc)
 #'
@@ -396,9 +414,9 @@ am_get_change_by_hash <- function(doc, hash) {
 #' @param doc1 An Automerge document (base/reference document)
 #' @param doc2 An Automerge document (comparison document)
 #'
-#' @return A list of raw vectors, where each vector is a serialized change
-#'   that exists in `doc2` but not in `doc1`. Returns an empty list if
-#'   `doc1` already contains all changes from `doc2`.
+#' @return A list of `am_change` objects representing changes that exist in
+#'   `doc2` but not in `doc1`. Returns an empty list if `doc1` already
+#'   contains all changes from `doc2`.
 #'
 #' @export
 #' @examples
@@ -413,6 +431,7 @@ am_get_change_by_hash <- function(doc, hash) {
 #'
 #' # Find changes in doc2 that aren't in doc1
 #' changes <- am_get_changes_added(doc1, doc2)
+#' changes
 #' length(changes)  # 1 change
 #'
 #' # Apply those changes to doc1
@@ -426,4 +445,208 @@ am_get_change_by_hash <- function(doc, hash) {
 #'
 am_get_changes_added <- function(doc1, doc2) {
   .Call(C_am_get_changes_added, doc1, doc2)
+}
+
+# v1.2 Document Operations ---------------------------------------------------
+
+#' Clone an Automerge document
+#'
+#' Creates an independent deep copy of an Automerge document, preserving
+#' the same actor ID. Changes to the clone do not affect the original,
+#' and vice versa.
+#'
+#' Unlike [am_fork()], which assigns a new actor ID to the copy,
+#' `am_clone()` preserves the original actor ID. This makes it suitable
+#' for archival snapshots or checkpoints where you want an exact copy of
+#' the document state. Do not use `am_clone()` to create branches that
+#' will make independent edits and later be merged — use [am_fork()]
+#' for that, as two documents sharing an actor ID can cause conflicts.
+#'
+#' @param doc An Automerge document
+#'
+#' @return A new Automerge document (independent copy with same actor ID)
+#'
+#' @seealso [am_fork()] for creating branches with a new actor ID
+#' @export
+#' @examples
+#' doc <- am_create()
+#' doc$key <- "value"
+#' am_commit(doc)
+#'
+#' clone <- am_clone(doc)
+#' clone$key  # "value"
+#'
+#' # Clone preserves the actor ID
+#' am_get_actor_hex(doc) == am_get_actor_hex(clone) # TRUE
+#'
+#' # Changes to clone don't affect original
+#' clone$key <- "changed"
+#' doc$key  # still "value"
+#'
+#' am_close(doc)
+#' am_close(clone)
+#'
+am_clone <- function(doc) {
+  .Call(C_am_clone, doc)
+}
+
+#' Test document equality
+#'
+#' Tests whether two Automerge documents have the same content. Documents
+#' are equal if they have the same set of changes applied, regardless of
+#' how they were created.
+#'
+#' @param doc1 An Automerge document
+#' @param doc2 An Automerge document
+#'
+#' @return A logical scalar: `TRUE` if the documents are equal, `FALSE`
+#'   otherwise.
+#'
+#' @export
+#' @examples
+#' doc1 <- am_create()
+#' doc1$key <- "value"
+#' am_commit(doc1)
+#'
+#' doc2 <- am_clone(doc1)
+#' am_equal(doc1, doc2)  # TRUE
+#'
+#' doc2$key <- "different"
+#' am_equal(doc1, doc2)  # FALSE
+#'
+#' am_close(doc1)
+#' am_close(doc2)
+#'
+am_equal <- function(doc1, doc2) {
+  .Call(C_am_equal, doc1, doc2)
+}
+
+#' Get the number of pending operations
+#'
+#' Returns the number of operations that have been applied to the document
+#' but not yet committed. This is useful for determining whether a commit
+#' is needed.
+#'
+#' @param doc An Automerge document
+#'
+#' @return An integer indicating the number of pending operations. Returns 0
+#'   if there are no uncommitted changes.
+#'
+#' @export
+#' @examples
+#' doc <- am_create()
+#' am_pending_ops(doc)  # 0
+#'
+#' doc$key <- "value"
+#' am_pending_ops(doc)  # > 0
+#'
+#' am_commit(doc)
+#' am_pending_ops(doc)  # 0
+#'
+#' am_close(doc)
+#'
+am_pending_ops <- function(doc) {
+  .Call(C_am_pending_ops, doc)
+}
+
+#' Create an empty change
+#'
+#' Creates a new change in the document's history without any operations.
+#' This is useful for creating merge commits or recording metadata
+#' (message, timestamp) without making data changes.
+#'
+#' @param doc An Automerge document
+#' @param message Optional commit message (character string)
+#' @param time Optional timestamp (POSIXct). If `NULL`, uses current time.
+#'
+#' @return The document `doc` (invisibly)
+#'
+#' @export
+#' @examples
+#' doc <- am_create()
+#' doc$key <- "value"
+#' am_commit(doc, "Initial data")
+#'
+#' # Create empty change as a checkpoint
+#' am_commit_empty(doc, "Checkpoint")
+#'
+#' am_close(doc)
+#'
+am_commit_empty <- function(doc, message = NULL, time = NULL) {
+  invisible(.Call(C_am_commit_empty, doc, message, time))
+}
+
+#' Save incremental changes
+#'
+#' Serializes only the changes made since the last call to `am_save()` or
+#' `am_save_incremental()`. This is more efficient than saving the entire
+#' document when only a few changes have been made.
+#'
+#' Use [am_load_incremental()] to apply these changes to another document.
+#'
+#' @param doc An Automerge document
+#'
+#' @return A raw vector containing the incremental changes. May be empty
+#'   (zero-length) if no new changes have been made since the last save.
+#'
+#' @seealso [am_load_incremental()], [am_save()]
+#'
+#' @export
+#' @examples
+#' doc <- am_create()
+#' doc$key <- "value"
+#' am_commit(doc)
+#'
+#' # Save full document
+#' full <- am_save(doc)
+#'
+#' # Make more changes
+#' doc$key2 <- "value2"
+#' am_commit(doc)
+#'
+#' # Save only the new changes
+#' incremental <- am_save_incremental(doc)
+#' length(incremental) < length(full)  # TRUE (smaller)
+#'
+#' am_close(doc)
+#'
+am_save_incremental <- function(doc) {
+  .Call(C_am_save_incremental, doc)
+}
+
+#' Load incremental changes into a document
+#'
+#' Applies incremental changes (from [am_save_incremental()]) to a document.
+#' This is more efficient than loading a full document when only a few
+#' changes need to be applied.
+#'
+#' @param doc An Automerge document
+#' @param data A raw vector containing incremental changes (from
+#'   [am_save_incremental()])
+#'
+#' @return The number of operations applied (numeric scalar, invisibly).
+#'
+#' @seealso [am_save_incremental()], [am_load()]
+#'
+#' @export
+#' @examples
+#' doc1 <- am_create()
+#' doc1$key <- "value"
+#' am_commit(doc1)
+#' bytes <- am_save(doc1)
+#'
+#' doc1$key2 <- "value2"
+#' am_commit(doc1)
+#' incremental <- am_save_incremental(doc1)
+#'
+#' # Load base document and apply incremental changes
+#' doc2 <- am_load(bytes)
+#' am_load_incremental(doc2, incremental)
+#' doc2$key2  # "value2"
+#'
+#' am_close(doc1)
+#' am_close(doc2)
+#'
+am_load_incremental <- function(doc, data) {
+  invisible(.Call(C_am_load_incremental, doc, data))
 }

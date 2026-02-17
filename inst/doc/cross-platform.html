@@ -580,7 +580,7 @@ synchronization between JavaScript and R.</p>
 <span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>  <span class="fu">am_commit</span>(<span class="st">&quot;Initial R doc&quot;</span>)</span>
 <span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a></span>
 <span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co"># Create sync state</span></span>
-<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>r_sync <span class="ot">&lt;-</span> <span class="fu">am_sync_state_new</span>()</span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>r_sync <span class="ot">&lt;-</span> <span class="fu">am_sync_state</span>()</span>
 <span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a></span>
 <span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co"># Generate sync message to send to JavaScript</span></span>
 <span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a>sync_msg_to_js <span class="ot">&lt;-</span> <span class="fu">am_sync_encode</span>(r_doc, r_sync)</span>

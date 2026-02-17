@@ -76,7 +76,7 @@ knitr::opts_chunk$set(
 #   am_commit("Initial R doc")
 # 
 # # Create sync state
-# r_sync <- am_sync_state_new()
+# r_sync <- am_sync_state()
 # 
 # # Generate sync message to send to JavaScript
 # sync_msg_to_js <- am_sync_encode(r_doc, r_sync)

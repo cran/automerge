@@ -302,6 +302,14 @@
       Error in `am_load()`:
       ! Automerge error at document.c:LINE: unable to parse chunk: failed to parse header: Invalid magic bytes
 
+# Invalidated sync state is detected
+
+    Code
+      am_sync_state_encode(invalid_sync)
+    Condition
+      Error in `am_sync_state_encode()`:
+      ! Invalid sync state pointer (NULL or freed)
+
 # am_sync_decode validates message type
 
     Code
@@ -412,7 +420,7 @@
       am_apply_changes(doc, "not a list")
     Condition
       Error in `am_apply_changes()`:
-      ! changes must be a list of raw vectors
+      ! changes must be a list
 
 ---
 
@@ -420,7 +428,7 @@
       am_apply_changes(doc, 123)
     Condition
       Error in `am_apply_changes()`:
-      ! changes must be a list of raw vectors
+      ! changes must be a list
 
 ---
 
@@ -428,7 +436,7 @@
       am_apply_changes(doc, raw(5))
     Condition
       Error in `am_apply_changes()`:
-      ! changes must be a list of raw vectors
+      ! changes must be a list
 
 ---
 
@@ -436,7 +444,7 @@
       am_apply_changes(doc, NULL)
     Condition
       Error in `am_apply_changes()`:
-      ! changes must be a list of raw vectors
+      ! changes must be a list
 
 # am_put_path validates with non-existent intermediate and no create
 

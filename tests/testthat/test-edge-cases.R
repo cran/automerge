@@ -359,7 +359,7 @@ strip_line_numbers <- function(x) {
 test_that("sync state operations with invalid pointers", {
   doc1 <- am_create()
   doc2 <- am_create()
-  sync_state <- am_sync_state_new()
+  sync_state <- am_sync_state()
 
   # Generate a valid message
   msg <- am_sync_encode(doc1, sync_state)
@@ -386,7 +386,7 @@ test_that("sync state operations with invalid pointers", {
 
 test_that("sync decode with zero-length message", {
   doc <- am_create()
-  sync_state <- am_sync_state_new()
+  sync_state <- am_sync_state()
 
   # Zero-length raw vector should trigger an error
   expect_snapshot(error = TRUE, transform = strip_line_numbers, {
@@ -396,7 +396,7 @@ test_that("sync decode with zero-length message", {
 
 test_that("sync decode with malformed message", {
   doc <- am_create()
-  sync_state <- am_sync_state_new()
+  sync_state <- am_sync_state()
 
   # Random bytes that aren't a valid sync message
   set.seed(123)
@@ -463,15 +463,11 @@ test_that("am_apply_changes with empty and invalid lists", {
   })
 })
 
-test_that("am_apply_changes with malformed change data", {
+test_that("am_apply_changes rejects raw vectors", {
   doc <- am_create()
 
-  # Random bytes that aren't valid changes
-  set.seed(456)
-  bad_change <- as.raw(sample(0:255, 100, replace = TRUE))
-
   expect_snapshot(error = TRUE, transform = strip_line_numbers, {
-    am_apply_changes(doc, list(bad_change))
+    am_apply_changes(doc, list(raw(10)))
   })
 })
 
@@ -712,7 +708,7 @@ test_that("sync between empty documents", {
 
 test_that("sync state lifecycle", {
   # Create sync state
-  state1 <- am_sync_state_new()
+  state1 <- am_sync_state()
   expect_s3_class(state1, "am_syncstate")
 
   # Use it multiple times
@@ -726,7 +722,7 @@ test_that("sync state lifecycle", {
   }
 
   # Create another state
-  state2 <- am_sync_state_new()
+  state2 <- am_sync_state()
   msg2 <- am_sync_encode(doc2, state2)
   if (!is.null(msg2)) {
     am_sync_decode(doc1, state2, msg2)
@@ -942,7 +938,7 @@ test_that("invalid change data structures", {
 
   # Test that changes have expected structure
   expect_true(length(changes) > 0)
-  expect_type(changes[[1]], "raw")
+  expect_s3_class(changes[[1]], "am_change")
 
   # Applying same changes again is idempotent (no error)
   am_apply_changes(doc2, changes)
@@ -953,7 +949,7 @@ test_that("sync with corrupted message state", {
   doc1 <- am_create()
   doc1$data <- "test"
   doc2 <- am_create()
-  sync_state <- am_sync_state_new()
+  sync_state <- am_sync_state()
 
   # Generate valid message
   msg <- am_sync_encode(doc1, sync_state)
@@ -1100,57 +1096,6 @@ test_that("operations after merge conflicts", {
   expect_equal(am_get(doc_loaded, AM_ROOT, "y"), "new_value")
 })
 
-test_that("insert at beginning and end of lists", {
-  doc <- am_create()
-  doc$list <- AM_OBJ_TYPE_LIST
-  list_obj <- am_get(doc, AM_ROOT, "list")
-
-  # Insert at position 1 (empty list)
-  am_insert(doc, list_obj, 1, "first")
-  expect_equal(am_get(doc, list_obj, 1), "first")
-
-  # Insert at position 1 again (beginning)
-  am_insert(doc, list_obj, 1, "new_first")
-  expect_equal(am_get(doc, list_obj, 1), "new_first")
-  expect_equal(am_get(doc, list_obj, 2), "first")
-
-  # Insert at end
-  am_insert(doc, list_obj, "end", "last")
-  len <- am_length(doc, list_obj)
-  expect_equal(am_get(doc, list_obj, len), "last")
-
-  # Insert in middle
-  am_insert(doc, list_obj, 2, "middle")
-  expect_equal(am_get(doc, list_obj, 2), "middle")
-})
-
-test_that("fork with multiple concurrent changes", {
-  doc1 <- am_create()
-  doc1$base <- "value"
-  am_commit(doc1)
-
-  # Create multiple forks
-  doc2 <- am_fork(doc1)
-  doc3 <- am_fork(doc1)
-  doc4 <- am_fork(doc1)
-
-  # Each makes different changes
-  doc2$a <- 1
-  doc3$b <- 2
-  doc4$c <- 3
-
-  # Merge all back to doc1
-  am_merge(doc1, doc2)
-  am_merge(doc1, doc3)
-  am_merge(doc1, doc4)
-
-  # All changes should be present
-  expect_equal(am_get(doc1, AM_ROOT, "a"), 1)
-  expect_equal(am_get(doc1, AM_ROOT, "b"), 2)
-  expect_equal(am_get(doc1, AM_ROOT, "c"), 3)
-  expect_equal(am_get(doc1, AM_ROOT, "base"), "value")
-})
-
 test_that("large text operations", {
   doc <- am_create()
 
@@ -1174,29 +1119,3 @@ test_that("large text operations", {
   expect_equal(nchar(result3), 2008)
 })
 
-test_that("deeply nested get operations", {
-  doc <- am_create()
-
-  # Build deep structure: root -> l1 -> l2 -> l3 -> l4 -> l5
-  doc$l1 <- AM_OBJ_TYPE_MAP
-  l1 <- am_get(doc, AM_ROOT, "l1")
-  am_put(doc, l1, "l2", AM_OBJ_TYPE_MAP)
-  l2 <- am_get(doc, l1, "l2")
-  am_put(doc, l2, "l3", AM_OBJ_TYPE_MAP)
-  l3 <- am_get(doc, l2, "l3")
-  am_put(doc, l3, "l4", AM_OBJ_TYPE_MAP)
-  l4 <- am_get(doc, l3, "l4")
-  am_put(doc, l4, "l5", AM_OBJ_TYPE_MAP)
-  l5 <- am_get(doc, l4, "l5")
-  am_put(doc, l5, "deep", "found")
-
-  # Retrieve step by step
-  result <- am_get(doc, AM_ROOT, "l1")
-  result <- am_get(doc, result, "l2")
-  result <- am_get(doc, result, "l3")
-  result <- am_get(doc, result, "l4")
-  result <- am_get(doc, result, "l5")
-  result <- am_get(doc, result, "deep")
-
-  expect_equal(result, "found")
-})

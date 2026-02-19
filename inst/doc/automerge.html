@@ -381,7 +381,7 @@ applications like shared notebooks or data pipelines</li>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>doc <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">print</span>(doc)</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; &lt;Automerge Document&gt;</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; Actor: acb6468ce6c241163022afacdb7dc5e6 </span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; Actor: c575e95ef678706a0040981fe5431d64 </span></span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; Root keys: 0</span></span></code></pre></div>
 <p>Note: When you’re done working with a document, you can explicitly
 free its resources with <code>am_close(doc)</code> if you don’t want to
@@ -613,7 +613,7 @@ without conflicts:</p>
 <span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="fu">am_put</span>(doc9, AM_ROOT, <span class="st">&quot;updated_at&quot;</span>, <span class="fu">Sys.time</span>())</span>
 <span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a></span>
 <span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>doc9[[<span class="st">&quot;created_at&quot;</span>]]</span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-16 19:16:08 GMT&quot;</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-18 20:39:10 GMT&quot;</span></span>
 <span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a></span>
 <span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="fu">am_close</span>(doc9)</span></code></pre></div>
 </div>
@@ -735,7 +735,7 @@ document:</p>
 <span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a>doc12[[<span class="st">&quot;value2&quot;</span>]]</span>
 <span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a><span class="co">#&gt; [1] 200</span></span>
 <span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a>doc12[[<span class="st">&quot;source&quot;</span>]] <span class="co"># One value wins deterministically for conflicting keys</span></span>
-<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a><span class="co">#&gt; [1] &quot;doc12&quot;</span></span>
+<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a><span class="co">#&gt; [1] &quot;doc13&quot;</span></span>
 <span id="cb18-20"><a href="#cb18-20" tabindex="-1"></a></span>
 <span id="cb18-21"><a href="#cb18-21" tabindex="-1"></a><span class="fu">am_close</span>(doc12)</span>
 <span id="cb18-22"><a href="#cb18-22" tabindex="-1"></a><span class="fu">am_close</span>(doc13)</span></code></pre></div>
@@ -788,44 +788,54 @@ inspect this with the change introspection functions:</p>
 <span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a></span>
 <span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="co"># Get the full history (returns am_change objects directly)</span></span>
 <span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a>history <span class="ot">&lt;-</span> <span class="fu">am_get_changes</span>(doc14)</span>
-<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Document has&quot;</span>, <span class="fu">length</span>(history), <span class="st">&quot;change(s)</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a><span class="co">#&gt; Document has 2 change(s)</span></span>
-<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a></span>
-<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a><span class="co"># Inspect each change - no parsing needed</span></span>
-<span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(history)) {</span>
-<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a>  <span class="fu">cat</span>(</span>
-<span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a>    <span class="fu">sprintf</span>(</span>
-<span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a>      <span class="st">&quot;Change %d: seq=%g, message=%s</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
-<span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a>      i,</span>
-<span id="cb20-19"><a href="#cb20-19" tabindex="-1"></a>      <span class="fu">am_change_seq</span>(history[[i]]),</span>
-<span id="cb20-20"><a href="#cb20-20" tabindex="-1"></a>      <span class="fu">am_change_message</span>(history[[i]]) <span class="sc">%||%</span> <span class="st">&quot;(none)&quot;</span></span>
-<span id="cb20-21"><a href="#cb20-21" tabindex="-1"></a>    )</span>
-<span id="cb20-22"><a href="#cb20-22" tabindex="-1"></a>  )</span>
-<span id="cb20-23"><a href="#cb20-23" tabindex="-1"></a>}</span>
-<span id="cb20-24"><a href="#cb20-24" tabindex="-1"></a><span class="co">#&gt; Change 1: seq=1, message=Initial setup</span></span>
-<span id="cb20-25"><a href="#cb20-25" tabindex="-1"></a><span class="co">#&gt; Change 2: seq=2, message=Set version</span></span>
-<span id="cb20-26"><a href="#cb20-26" tabindex="-1"></a></span>
-<span id="cb20-27"><a href="#cb20-27" tabindex="-1"></a><span class="co"># Extract many fields from the same change</span></span>
-<span id="cb20-28"><a href="#cb20-28" tabindex="-1"></a>change <span class="ot">&lt;-</span> history[[<span class="dv">2</span>]]</span>
-<span id="cb20-29"><a href="#cb20-29" tabindex="-1"></a><span class="fu">am_change_hash</span>(change)     <span class="co"># Unique 32-byte hash</span></span>
-<span id="cb20-30"><a href="#cb20-30" tabindex="-1"></a><span class="co">#&gt;  [1] f4 bc bc 1b ea 17 8c 2b 14 78 d7 28 6e 25 1b b3 4f 71 e6 26 79 3d e4 f4 38</span></span>
-<span id="cb20-31"><a href="#cb20-31" tabindex="-1"></a><span class="co">#&gt; [26] b7 a7 1c 80 36 10 6e</span></span>
-<span id="cb20-32"><a href="#cb20-32" tabindex="-1"></a><span class="fu">am_change_message</span>(change)  <span class="co"># Commit message</span></span>
-<span id="cb20-33"><a href="#cb20-33" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Set version&quot;</span></span>
-<span id="cb20-34"><a href="#cb20-34" tabindex="-1"></a><span class="fu">am_change_time</span>(change)     <span class="co"># Timestamp</span></span>
-<span id="cb20-35"><a href="#cb20-35" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-16 19:16:08 GMT&quot;</span></span>
-<span id="cb20-36"><a href="#cb20-36" tabindex="-1"></a><span class="fu">am_change_seq</span>(change)      <span class="co"># Sequence number</span></span>
-<span id="cb20-37"><a href="#cb20-37" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
-<span id="cb20-38"><a href="#cb20-38" tabindex="-1"></a><span class="fu">am_change_actor_id</span>(change) <span class="co"># Who made the change</span></span>
-<span id="cb20-39"><a href="#cb20-39" tabindex="-1"></a><span class="co">#&gt;  [1] 07 7d 1d 94 59 9b d7 27 bc 91 a9 7b 79 b0 a3 9e</span></span>
-<span id="cb20-40"><a href="#cb20-40" tabindex="-1"></a><span class="fu">am_change_deps</span>(change)     <span class="co"># Parent change hashes</span></span>
-<span id="cb20-41"><a href="#cb20-41" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
-<span id="cb20-42"><a href="#cb20-42" tabindex="-1"></a><span class="co">#&gt;  [1] 55 d5 bb 52 88 2d 75 ba 0a 41 f0 5f 8d 32 fe c0 5e 53 9a 29 2c f9 c0 81 69</span></span>
-<span id="cb20-43"><a href="#cb20-43" tabindex="-1"></a><span class="co">#&gt; [26] 53 5b 62 80 a5 55 cd</span></span>
-<span id="cb20-44"><a href="#cb20-44" tabindex="-1"></a><span class="fu">am_change_size</span>(change)     <span class="co"># Number of operations</span></span>
-<span id="cb20-45"><a href="#cb20-45" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
-<span id="cb20-46"><a href="#cb20-46" tabindex="-1"></a></span>
-<span id="cb20-47"><a href="#cb20-47" tabindex="-1"></a><span class="fu">am_close</span>(doc14)</span></code></pre></div>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a>history</span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a><span class="co">#&gt; &lt;Automerge Change&gt;</span></span>
+<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a><span class="co">#&gt; Hash: a0 e1 98 f5 ...</span></span>
+<span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a><span class="co">#&gt; Message: Initial setup </span></span>
+<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a><span class="co">#&gt; Time: 2026-02-18 20:39:11 </span></span>
+<span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a><span class="co">#&gt; [[2]]</span></span>
+<span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a><span class="co">#&gt; &lt;Automerge Change&gt;</span></span>
+<span id="cb20-19"><a href="#cb20-19" tabindex="-1"></a><span class="co">#&gt; Hash: 44 0f b6 f8 ...</span></span>
+<span id="cb20-20"><a href="#cb20-20" tabindex="-1"></a><span class="co">#&gt; Message: Set version </span></span>
+<span id="cb20-21"><a href="#cb20-21" tabindex="-1"></a><span class="co">#&gt; Time: 2026-02-18 20:39:11</span></span>
+<span id="cb20-22"><a href="#cb20-22" tabindex="-1"></a></span>
+<span id="cb20-23"><a href="#cb20-23" tabindex="-1"></a><span class="co"># Inspect each change - no parsing needed</span></span>
+<span id="cb20-24"><a href="#cb20-24" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(history)) {</span>
+<span id="cb20-25"><a href="#cb20-25" tabindex="-1"></a>  <span class="fu">cat</span>(</span>
+<span id="cb20-26"><a href="#cb20-26" tabindex="-1"></a>    <span class="fu">sprintf</span>(</span>
+<span id="cb20-27"><a href="#cb20-27" tabindex="-1"></a>      <span class="st">&quot;Change %d: seq=%g, message=%s</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb20-28"><a href="#cb20-28" tabindex="-1"></a>      i,</span>
+<span id="cb20-29"><a href="#cb20-29" tabindex="-1"></a>      <span class="fu">am_change_seq</span>(history[[i]]),</span>
+<span id="cb20-30"><a href="#cb20-30" tabindex="-1"></a>      <span class="fu">am_change_message</span>(history[[i]]) <span class="sc">%||%</span> <span class="st">&quot;(none)&quot;</span></span>
+<span id="cb20-31"><a href="#cb20-31" tabindex="-1"></a>    )</span>
+<span id="cb20-32"><a href="#cb20-32" tabindex="-1"></a>  )</span>
+<span id="cb20-33"><a href="#cb20-33" tabindex="-1"></a>}</span>
+<span id="cb20-34"><a href="#cb20-34" tabindex="-1"></a><span class="co">#&gt; Change 1: seq=1, message=Initial setup</span></span>
+<span id="cb20-35"><a href="#cb20-35" tabindex="-1"></a><span class="co">#&gt; Change 2: seq=2, message=Set version</span></span>
+<span id="cb20-36"><a href="#cb20-36" tabindex="-1"></a></span>
+<span id="cb20-37"><a href="#cb20-37" tabindex="-1"></a><span class="co"># Extract many fields from the same change</span></span>
+<span id="cb20-38"><a href="#cb20-38" tabindex="-1"></a>change <span class="ot">&lt;-</span> history[[<span class="dv">2</span>]]</span>
+<span id="cb20-39"><a href="#cb20-39" tabindex="-1"></a><span class="fu">am_change_hash</span>(change)     <span class="co"># Unique 32-byte hash</span></span>
+<span id="cb20-40"><a href="#cb20-40" tabindex="-1"></a><span class="co">#&gt;  [1] 44 0f b6 f8 8e 00 82 25 d6 6a c3 ed 01 aa de 53 c3 bf a5 bc 2f 79 f9 e9 13</span></span>
+<span id="cb20-41"><a href="#cb20-41" tabindex="-1"></a><span class="co">#&gt; [26] c1 24 15 72 de 74 0f</span></span>
+<span id="cb20-42"><a href="#cb20-42" tabindex="-1"></a><span class="fu">am_change_message</span>(change)  <span class="co"># Commit message</span></span>
+<span id="cb20-43"><a href="#cb20-43" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Set version&quot;</span></span>
+<span id="cb20-44"><a href="#cb20-44" tabindex="-1"></a><span class="fu">am_change_time</span>(change)     <span class="co"># Timestamp</span></span>
+<span id="cb20-45"><a href="#cb20-45" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-18 20:39:11 GMT&quot;</span></span>
+<span id="cb20-46"><a href="#cb20-46" tabindex="-1"></a><span class="fu">am_change_seq</span>(change)      <span class="co"># Sequence number</span></span>
+<span id="cb20-47"><a href="#cb20-47" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
+<span id="cb20-48"><a href="#cb20-48" tabindex="-1"></a><span class="fu">am_change_actor_id</span>(change) <span class="co"># Who made the change</span></span>
+<span id="cb20-49"><a href="#cb20-49" tabindex="-1"></a><span class="co">#&gt;  [1] d8 ad cd e5 ce f4 b8 92 5c 76 d4 16 27 00 46 3b</span></span>
+<span id="cb20-50"><a href="#cb20-50" tabindex="-1"></a><span class="fu">am_change_deps</span>(change)     <span class="co"># Parent change hashes</span></span>
+<span id="cb20-51"><a href="#cb20-51" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
+<span id="cb20-52"><a href="#cb20-52" tabindex="-1"></a><span class="co">#&gt;  [1] a0 e1 98 f5 f5 af 98 c0 1a 69 3e cd 89 b9 d9 46 2f 6d e3 a4 58 cc f9 3e 37</span></span>
+<span id="cb20-53"><a href="#cb20-53" tabindex="-1"></a><span class="co">#&gt; [26] 93 7a 25 22 26 2a 6e</span></span>
+<span id="cb20-54"><a href="#cb20-54" tabindex="-1"></a><span class="fu">am_change_size</span>(change)     <span class="co"># Number of operations</span></span>
+<span id="cb20-55"><a href="#cb20-55" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb20-56"><a href="#cb20-56" tabindex="-1"></a></span>
+<span id="cb20-57"><a href="#cb20-57" tabindex="-1"></a><span class="fu">am_close</span>(doc14)</span></code></pre></div>
 </div>
 <div id="time-travel-undoing-changes" class="section level2">
 <h2>Time Travel: Undoing Changes</h2>

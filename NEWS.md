@@ -1,3 +1,9 @@
+# automerge 0.3.1
+
+* Adds `print()` method for `am_change` objects.
+
+* Removes vendored `tinyvec` dependency to fix Valgrind false positive.
+
 # automerge 0.3.0
 
 * Change-returning functions (`am_get_changes()`, `am_get_last_local_change()`, 
@@ -52,7 +58,9 @@
 # automerge 0.2.1
 
 * Adds `str.am_doc()` method to display the structure of an Automerge document.
+
 * Adds `am_close()` for explicitly closing a document.
+
 * Updates MSRV to 1.84.
 
 # automerge 0.2.0

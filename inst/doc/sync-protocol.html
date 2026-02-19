@@ -659,8 +659,8 @@ document has all its dependencies with
 <span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a></span>
 <span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co"># A complete document has no missing deps</span></span>
 <span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>missing <span class="ot">&lt;-</span> <span class="fu">am_get_missing_deps</span>(doc_check)</span>
-<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="fu">length</span>(missing) <span class="co"># 0</span></span>
-<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; [1] 0</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>missing</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; list()</span></span>
 <span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a></span>
 <span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="fu">am_close</span>(doc_check)</span></code></pre></div>
 </div>
@@ -686,16 +686,16 @@ document has all its dependencies with
 <span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a><span class="co"># Extract multiple fields from the same change</span></span>
 <span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a>change <span class="ot">&lt;-</span> history[[<span class="dv">2</span>]]</span>
 <span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a><span class="fu">am_change_hash</span>(change)     <span class="co"># Unique hash</span></span>
-<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a><span class="co">#&gt;  [1] 2a cd 7f f9 11 ab d5 26 4c c8 d1 65 da 1f 5c 70 1d d5 aa 39 81 27 2a 97 a3</span></span>
-<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a><span class="co">#&gt; [26] a9 09 d5 c5 e3 dc b2</span></span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a><span class="co">#&gt;  [1] aa 52 7e f7 bd 24 41 15 47 6a 98 ac b0 5a 28 36 bd 1c 3a d9 0d f8 f7 ff bc</span></span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a><span class="co">#&gt; [26] cb 45 b8 ec 12 5c 84</span></span>
 <span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="fu">am_change_actor_id</span>(change) <span class="co"># Who made this change</span></span>
-<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a><span class="co">#&gt;  [1] c6 c7 24 d5 95 06 04 73 f7 0d ef e6 5d 5e 8e 71</span></span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a><span class="co">#&gt;  [1] 99 7f 87 74 64 9d 11 d8 3a bd 59 97 22 6d 52 2f</span></span>
 <span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="fu">am_change_time</span>(change)     <span class="co"># When</span></span>
 <span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a><span class="co">#&gt; [1] &quot;1970-01-01 01:00:00 BST&quot;</span></span>
 <span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a><span class="fu">am_change_deps</span>(change)     <span class="co"># Parent changes</span></span>
 <span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
-<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a><span class="co">#&gt;  [1] b4 b4 2c ae 4c 49 01 e7 f9 b9 57 d7 43 84 ab 51 e8 69 72 1d 9f 12 86 a4 93</span></span>
-<span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a><span class="co">#&gt; [26] e9 cd 00 64 ee bb 99</span></span>
+<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a><span class="co">#&gt;  [1] 38 c0 f3 03 3e 35 05 44 ec 93 ae c3 2f 6a 2a 1d 06 ea 25 17 28 c2 ab 92 66</span></span>
+<span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a><span class="co">#&gt; [26] 98 4c a4 79 8d a2 0d</span></span>
 <span id="cb10-31"><a href="#cb10-31" tabindex="-1"></a><span class="fu">am_change_size</span>(change)     <span class="co"># Number of operations</span></span>
 <span id="cb10-32"><a href="#cb10-32" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
 <span id="cb10-33"><a href="#cb10-33" tabindex="-1"></a></span>

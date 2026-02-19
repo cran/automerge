@@ -597,3 +597,26 @@ print.am_syncstate <- function(x, ...) {
   cat("<Automerge Sync State>\n")
   invisible(x)
 }
+
+#' Print Automerge change
+#'
+#' @param x An Automerge change
+#' @param ... Additional arguments (unused)
+#' @return The change (invisibly)
+#' @keywords internal
+#' @export
+#'
+print.am_change <- function(x, ...) {
+  cat("<Automerge Change>\n")
+  hash <- am_change_hash(x)
+  cat("Hash:", paste0(format(hash[1:4]), collapse = " "), "...\n")
+  msg <- am_change_message(x)
+  if (!is.null(msg)) {
+    cat("Message:", msg, "\n")
+  }
+  time <- am_change_time(x)
+  if (time != 0) {
+    cat("Time:", format(time), "\n")
+  }
+  invisible(x)
+}

@@ -1,7 +1,7 @@
 Type: Package
 Package: automerge
 Title: R Bindings for 'Automerge' 'CRDT' Library
-Version: 0.3.0
+Version: 0.3.1
 Authors@R: c(
     person("Charlie", "Gao", , "charlie.gao@posit.co", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-0750-061X")),
@@ -35,10 +35,10 @@ RoxygenNote: 7.3.3
 SystemRequirements: 'automerge-c', or Cargo (Rust's package manager),
         rustc >= 1.85 and CMake >= 3.25 to build from package sources.
 NeedsCompilation: yes
-Packaged: 2026-02-16 19:16:11 UTC; cg334
+Packaged: 2026-02-18 20:39:14 UTC; cg334
 Author: Charlie Gao [aut, cre] (ORCID: <https://orcid.org/0000-0002-0750-061X>),
   Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>),
   Authors of the dependency Rust crates [cph] (see inst/AUTHORS file)
 Maintainer: Charlie Gao <charlie.gao@posit.co>
 Repository: CRAN
-Date/Publication: 2026-02-17 06:11:11 UTC
+Date/Publication: 2026-02-19 08:50:08 UTC

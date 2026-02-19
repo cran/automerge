@@ -828,3 +828,15 @@ test_that("print.am_syncstate displays sync state info", {
 
   expect_snapshot(print(sync_state))
 })
+
+test_that("print.am_change displays change info", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "x", 1)
+  am_commit(doc, "Add x")
+
+  change <- am_get_changes(doc)[[1]]
+
+  expect_snapshot(print(change), transform = function(x) {
+    sub("Hash: .+", "Hash: <HASH>", x)
+  })
+})

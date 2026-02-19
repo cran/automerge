@@ -424,11 +424,15 @@ IDs) to ensure all replicas converge to the same value.</p>
 <span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a></span>
 <span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co"># To see all conflicting values (not just the winner), use am_map_get_all()</span></span>
 <span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>all_values <span class="ot">&lt;-</span> <span class="fu">am_map_get_all</span>(doc1, AM_ROOT, <span class="st">&quot;name&quot;</span>)</span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="fu">length</span>(all_values) <span class="co"># 2 - both &quot;Alice Smith&quot; and &quot;Alice Johnson&quot;</span></span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a></span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="fu">am_close</span>(doc1)</span>
-<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="fu">am_close</span>(doc2)</span></code></pre></div>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>all_values</span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Alice Smith&quot;</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt; [[2]]</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Alice Johnson&quot;</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="fu">am_close</span>(doc1)</span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="fu">am_close</span>(doc2)</span></code></pre></div>
 <p><strong>When to use</strong>: Simple values where automatic conflict
 resolution is acceptable (metadata, settings, labels).</p>
 <p><strong>Trade-off</strong>: One concurrent change is lost, but
@@ -499,8 +503,8 @@ order and handles concurrent insertions elegantly.</p>
 <span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">am_get</span>(doc5, items5, i))</span>
 <span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>}</span>
 <span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt; [1] &quot;A&quot;</span></span>
-<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B1&quot;</span></span>
-<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B2&quot;</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B2&quot;</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt; [1] &quot;B1&quot;</span></span>
 <span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt; [1] &quot;C&quot;</span></span>
 <span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a></span>
 <span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="fu">am_close</span>(doc5)</span>
@@ -538,18 +542,16 @@ application-specific resolution logic.</p>
 <span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a></span>
 <span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co"># am_get returns the winner</span></span>
 <span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="fu">am_get</span>(doc_c1, AM_ROOT, <span class="st">&quot;status&quot;</span>)</span>
-<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt; [1] &quot;archived&quot;</span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt; [1] &quot;published&quot;</span></span>
 <span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a></span>
 <span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co"># am_map_get_all returns all conflicting values</span></span>
 <span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>all_statuses <span class="ot">&lt;-</span> <span class="fu">am_map_get_all</span>(doc_c1, AM_ROOT, <span class="st">&quot;status&quot;</span>)</span>
-<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="fu">length</span>(all_statuses) <span class="co"># 2</span></span>
-<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
-<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>all_statuses</span>
-<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
-<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt; [1] &quot;published&quot;</span></span>
-<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co">#&gt; [[2]]</span></span>
-<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="co">#&gt; [1] &quot;archived&quot;</span></span></code></pre></div>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>all_statuses</span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co">#&gt; [1] &quot;archived&quot;</span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt; [[2]]</span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt; [1] &quot;published&quot;</span></span></code></pre></div>
 <p>The same approach works for lists — when two peers concurrently
 update the same index, <code>am_list_get_all()</code> reveals both
 values:</p>
@@ -649,7 +651,7 @@ provide character-level CRDT merging.</p>
 <span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="fu">am_merge</span>(doc11, doc12)</span>
 <span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a></span>
 <span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a><span class="fu">am_text_content</span>(text11)</span>
-<span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Hello Everyone World&quot;</span></span>
+<span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Hello World Everyone&quot;</span></span>
 <span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a></span>
 <span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a><span class="fu">am_close</span>(doc11)</span>
 <span id="cb10-31"><a href="#cb10-31" tabindex="-1"></a><span class="fu">am_close</span>(doc12)</span></code></pre></div>
@@ -701,9 +703,9 @@ conflict resolution semantics (one value wins).</p>
 <span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a><span class="fu">am_merge</span>(doc15, doc16)</span>
 <span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a></span>
 <span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>doc15[[<span class="st">&quot;created_at&quot;</span>]]</span>
-<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-16 19:16:08 GMT&quot;</span></span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-18 20:39:11 GMT&quot;</span></span>
 <span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a>doc15[[<span class="st">&quot;updated_at&quot;</span>]]</span>
-<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-16 19:16:09 GMT&quot;</span></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-18 20:39:11 GMT&quot;</span></span>
 <span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a></span>
 <span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a><span class="fu">am_close</span>(doc15)</span>
 <span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a><span class="fu">am_close</span>(doc16)</span></code></pre></div>
@@ -797,14 +799,25 @@ annotations.</p>
 <span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>text18b <span class="ot">&lt;-</span> <span class="fu">am_get</span>(doc18b, AM_ROOT, <span class="st">&quot;text&quot;</span>)</span>
 <span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a></span>
 <span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="fu">am_mark</span>(text18b, <span class="dv">0</span>, <span class="dv">11</span>, <span class="st">&quot;bold&quot;</span>, <span class="cn">TRUE</span>)</span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">am_marks</span>(text18b)) <span class="co"># 1</span></span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a></span>
-<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="fu">am_mark_clear</span>(text18b, <span class="dv">0</span>, <span class="dv">11</span>, <span class="st">&quot;bold&quot;</span>)</span>
-<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">am_marks</span>(text18b)) <span class="co"># 0</span></span>
-<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="co">#&gt; [1] 0</span></span>
-<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a></span>
-<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="fu">am_close</span>(doc18b)</span></code></pre></div>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="fu">am_marks</span>(text18b)</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="co">#&gt; [[1]]$name</span></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="co">#&gt; [1] &quot;bold&quot;</span></span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="co">#&gt; [[1]]$value</span></span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="co">#&gt; [[1]]$start</span></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="co">#&gt; [1] 0</span></span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="co">#&gt; [[1]]$end</span></span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a><span class="co">#&gt; [1] 11</span></span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a></span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a><span class="fu">am_mark_clear</span>(text18b, <span class="dv">0</span>, <span class="dv">11</span>, <span class="st">&quot;bold&quot;</span>)</span>
+<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a><span class="fu">am_marks</span>(text18b)</span>
+<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a><span class="co">#&gt; list()</span></span>
+<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a></span>
+<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a><span class="fu">am_close</span>(doc18b)</span></code></pre></div>
 <p><strong>When to use</strong>: Rich text editors, collaborative
 annotations, syntax highlighting.</p>
 <p><strong>Mark expansion</strong>: Controls how marks behave when text
@@ -986,7 +999,7 @@ well:</p>
 <span id="cb23-11"><a href="#cb23-11" tabindex="-1"></a></span>
 <span id="cb23-12"><a href="#cb23-12" tabindex="-1"></a><span class="co"># One will win - application should handle both states sensibly</span></span>
 <span id="cb23-13"><a href="#cb23-13" tabindex="-1"></a>doc26[[<span class="st">&quot;status&quot;</span>]] <span class="co"># Should be prepared for either &#39;published&#39; or &#39;archived&#39;</span></span>
-<span id="cb23-14"><a href="#cb23-14" tabindex="-1"></a><span class="co">#&gt; [1] &quot;published&quot;</span></span>
+<span id="cb23-14"><a href="#cb23-14" tabindex="-1"></a><span class="co">#&gt; [1] &quot;archived&quot;</span></span>
 <span id="cb23-15"><a href="#cb23-15" tabindex="-1"></a></span>
 <span id="cb23-16"><a href="#cb23-16" tabindex="-1"></a><span class="co"># Use am_equal() to check if two documents have converged</span></span>
 <span id="cb23-17"><a href="#cb23-17" tabindex="-1"></a><span class="fu">am_merge</span>(doc27, doc26)</span>

@@ -1,3 +1,14 @@
+# automerge 0.4.0
+
+* `am_text_update()` no longer requires the `old_text` argument; the current
+  text content is now read from the document automatically.
+
+* `am_text_content()` gains a `heads` parameter for historical text queries.
+
+* Functions accepting a `heads` parameter now support multiple heads.
+
+* Fixes additional Valgrind false positive in vendored automerge library.
+
 # automerge 0.3.1
 
 * Adds `print()` method for `am_change` objects.

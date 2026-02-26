@@ -914,6 +914,54 @@ test_that("am_text_content() returns empty string for empty text", {
   expect_equal(result, "")
 })
 
+test_that("am_text_content() with heads returns historical text", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "text", am_text("Hello"))
+  am_commit(doc, "v1")
+  heads_v1 <- am_get_heads(doc)
+
+  text_obj <- am_get(doc, AM_ROOT, "text")
+  am_text_splice(text_obj, 5, 0, " World")
+  am_commit(doc, "v2")
+  heads_v2 <- am_get_heads(doc)
+
+  am_text_splice(text_obj, 11, 0, "!")
+  am_commit(doc, "v3")
+
+  expect_equal(am_text_content(text_obj), "Hello World!")
+  expect_equal(am_text_content(text_obj, heads_v1), "Hello")
+  expect_equal(am_text_content(text_obj, heads_v2), "Hello World")
+  expect_equal(am_text_content(text_obj, NULL), "Hello World!")
+})
+
+test_that("am_text_content() with heads works for empty text state", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "text", am_text(""))
+  am_commit(doc, "empty")
+  heads_empty <- am_get_heads(doc)
+
+  text_obj <- am_get(doc, AM_ROOT, "text")
+  am_text_splice(text_obj, 0, 0, "content")
+  am_commit(doc, "filled")
+
+  expect_equal(am_text_content(text_obj, heads_empty), "")
+  expect_equal(am_text_content(text_obj), "content")
+})
+
+test_that("am_text_content() with heads works with unicode", {
+  doc <- am_create()
+  am_put(doc, AM_ROOT, "text", am_text("Hello"))
+  am_commit(doc, "v1")
+  heads_v1 <- am_get_heads(doc)
+
+  text_obj <- am_get(doc, AM_ROOT, "text")
+  am_text_update(text_obj, "Hello 🌍")
+  am_commit(doc, "v2")
+
+  expect_equal(am_text_content(text_obj, heads_v1), "Hello")
+  expect_equal(am_text_content(text_obj), "Hello 🌍")
+})
+
 test_that("text objects persist after save/load", {
   doc1 <- am_create()
   am_put(doc1, AM_ROOT, "doc", am_text("Original"))
@@ -949,7 +997,7 @@ test_that("am_text_update() inserts text at end", {
   am_put(doc, AM_ROOT, "content", am_text("Hello"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "Hello", "Hello World")
+  am_text_update(text_obj, "Hello World")
 
   expect_equal(am_text_content(text_obj), "Hello World")
 })
@@ -959,7 +1007,7 @@ test_that("am_text_update() inserts text at beginning", {
   am_put(doc, AM_ROOT, "content", am_text("World"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "World", "Hello World")
+  am_text_update(text_obj, "Hello World")
 
   expect_equal(am_text_content(text_obj), "Hello World")
 })
@@ -969,7 +1017,7 @@ test_that("am_text_update() inserts text in middle", {
   am_put(doc, AM_ROOT, "content", am_text("HelloWorld"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "HelloWorld", "Hello World")
+  am_text_update(text_obj, "Hello World")
 
   expect_equal(am_text_content(text_obj), "Hello World")
 })
@@ -979,7 +1027,7 @@ test_that("am_text_update() deletes text at end", {
   am_put(doc, AM_ROOT, "content", am_text("Hello World"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "Hello World", "Hello")
+  am_text_update(text_obj, "Hello")
 
   expect_equal(am_text_content(text_obj), "Hello")
 })
@@ -989,7 +1037,7 @@ test_that("am_text_update() deletes text at beginning", {
   am_put(doc, AM_ROOT, "content", am_text("Hello World"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "Hello World", "World")
+  am_text_update(text_obj, "World")
 
   expect_equal(am_text_content(text_obj), "World")
 })
@@ -999,7 +1047,7 @@ test_that("am_text_update() deletes text in middle", {
   am_put(doc, AM_ROOT, "content", am_text("Hello World"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "Hello World", "HelloWorld")
+  am_text_update(text_obj, "HelloWorld")
 
   expect_equal(am_text_content(text_obj), "HelloWorld")
 })
@@ -1009,7 +1057,7 @@ test_that("am_text_update() replaces text", {
   am_put(doc, AM_ROOT, "content", am_text("Hello World"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "Hello World", "Hello Claude")
+  am_text_update(text_obj, "Hello Claude")
 
   expect_equal(am_text_content(text_obj), "Hello Claude")
 })
@@ -1019,7 +1067,7 @@ test_that("am_text_update() handles identical strings (no-op)", {
   am_put(doc, AM_ROOT, "content", am_text("Hello"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "Hello", "Hello")
+  am_text_update(text_obj, "Hello")
 
   expect_equal(am_text_content(text_obj), "Hello")
 })
@@ -1029,7 +1077,7 @@ test_that("am_text_update() handles empty to non-empty", {
   am_put(doc, AM_ROOT, "content", am_text(""))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "", "Hello")
+  am_text_update(text_obj, "Hello")
 
   expect_equal(am_text_content(text_obj), "Hello")
 })
@@ -1039,7 +1087,7 @@ test_that("am_text_update() handles non-empty to empty", {
   am_put(doc, AM_ROOT, "content", am_text("Hello"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "Hello", "")
+  am_text_update(text_obj, "")
 
   expect_equal(am_text_content(text_obj), "")
 })
@@ -1049,7 +1097,7 @@ test_that("am_text_update() handles UTF-8 characters", {
   am_put(doc, AM_ROOT, "content", am_text("你好"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "你好", "你好世界")
+  am_text_update(text_obj, "你好世界")
 
   expect_equal(am_text_content(text_obj), "你好世界")
 })
@@ -1059,7 +1107,7 @@ test_that("am_text_update() handles emoji", {
   am_put(doc, AM_ROOT, "content", am_text("Hello"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "Hello", "Hello 🌍")
+  am_text_update(text_obj, "Hello 🌍")
 
   expect_equal(am_text_content(text_obj), "Hello 🌍")
 })
@@ -1069,7 +1117,7 @@ test_that("am_text_update() handles emoji deletion", {
   am_put(doc, AM_ROOT, "content", am_text("Hello 🌍 World"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "Hello 🌍 World", "Hello World")
+  am_text_update(text_obj, "Hello World")
 
   expect_equal(am_text_content(text_obj), "Hello World")
 })
@@ -1079,7 +1127,7 @@ test_that("am_text_update() handles mixed Unicode", {
   am_put(doc, AM_ROOT, "content", am_text("Hello 世界"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "Hello 世界", "Hello 🌍 世界!")
+  am_text_update(text_obj, "Hello 🌍 世界!")
 
   expect_equal(am_text_content(text_obj), "Hello 🌍 世界!")
 })
@@ -1089,18 +1137,10 @@ test_that("am_text_update() returns invisibly", {
   am_put(doc, AM_ROOT, "content", am_text("Hello"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  result <- withVisible(am_text_update(text_obj, "Hello", "Hello World"))
+  result <- withVisible(am_text_update(text_obj, "Hello World"))
 
   expect_null(result$value)
   expect_false(result$visible)
-})
-
-test_that("am_text_update() errors on non-string old_text", {
-  doc <- am_create()
-  am_put(doc, AM_ROOT, "content", am_text("Hello"))
-  text_obj <- am_get(doc, AM_ROOT, "content")
-
-  expect_error(am_text_update(text_obj, 123, "Hello"), "single string")
 })
 
 test_that("am_text_update() errors on non-string new_text", {
@@ -1108,15 +1148,7 @@ test_that("am_text_update() errors on non-string new_text", {
   am_put(doc, AM_ROOT, "content", am_text("Hello"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  expect_error(am_text_update(text_obj, "Hello", 123), "single string")
-})
-
-test_that("am_text_update() errors on NA old_text", {
-  doc <- am_create()
-  am_put(doc, AM_ROOT, "content", am_text("Hello"))
-  text_obj <- am_get(doc, AM_ROOT, "content")
-
-  expect_error(am_text_update(text_obj, NA_character_, "Hello"), "NA")
+  expect_error(am_text_update(text_obj, 123), "single string")
 })
 
 test_that("am_text_update() errors on NA new_text", {
@@ -1124,7 +1156,7 @@ test_that("am_text_update() errors on NA new_text", {
   am_put(doc, AM_ROOT, "content", am_text("Hello"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  expect_error(am_text_update(text_obj, "Hello", NA_character_), "NA")
+  expect_error(am_text_update(text_obj, NA_character_), "NA")
 })
 
 test_that("am_text_update() handles single character changes", {
@@ -1132,7 +1164,7 @@ test_that("am_text_update() handles single character changes", {
   am_put(doc, AM_ROOT, "content", am_text("cat"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "cat", "bat")
+  am_text_update(text_obj, "bat")
 
   expect_equal(am_text_content(text_obj), "bat")
 })
@@ -1142,7 +1174,7 @@ test_that("am_text_update() handles complete replacement", {
   am_put(doc, AM_ROOT, "content", am_text("Hello"))
   text_obj <- am_get(doc, AM_ROOT, "content")
 
-  am_text_update(text_obj, "Hello", "World")
+  am_text_update(text_obj, "World")
 
   expect_equal(am_text_content(text_obj), "World")
 })
@@ -1151,7 +1183,7 @@ test_that("am_text_update() persists after save/load", {
   doc1 <- am_create()
   am_put(doc1, AM_ROOT, "content", am_text("Hello"))
   text_obj <- am_get(doc1, AM_ROOT, "content")
-  am_text_update(text_obj, "Hello", "Hello World")
+  am_text_update(text_obj, "Hello World")
   am_commit(doc1, "Edit text")
 
   bytes <- am_save(doc1)
@@ -2122,9 +2154,7 @@ test_that("am_values() with nested objects in lists", {
   expect_s3_class(values[[2]], "am_object")
 })
 
-# Multiple heads error paths
-
-test_that("am_map_get_all() errors on multiple heads", {
+test_that("am_map_get_all() supports multiple heads", {
   doc <- am_create()
   doc$key <- "v1"
   am_commit(doc)
@@ -2138,13 +2168,12 @@ test_that("am_map_get_all() errors on multiple heads", {
 
   heads <- am_get_heads(doc)
   expect_gte(length(heads), 2)
-  expect_error(
-    am_map_get_all(doc, AM_ROOT, "key", heads),
-    "multiple heads"
-  )
+  result <- am_map_get_all(doc, AM_ROOT, "key", heads)
+  expect_type(result, "list")
+  expect_gte(length(result), 2)
 })
 
-test_that("am_list_get_all() errors on multiple heads", {
+test_that("am_list_get_all() supports multiple heads", {
   doc <- am_create()
   doc$items <- list("a")
   am_commit(doc)
@@ -2160,13 +2189,12 @@ test_that("am_list_get_all() errors on multiple heads", {
 
   heads <- am_get_heads(doc)
   expect_gte(length(heads), 2)
-  expect_error(
-    am_list_get_all(doc, items1, 1, heads),
-    "multiple heads"
-  )
+  result <- am_list_get_all(doc, items1, 1, heads)
+  expect_type(result, "list")
+  expect_gte(length(result), 2)
 })
 
-test_that("am_map_range() errors on multiple heads", {
+test_that("am_map_range() supports multiple heads", {
   doc <- am_create()
   doc$a <- 1
   am_commit(doc)
@@ -2180,13 +2208,12 @@ test_that("am_map_range() errors on multiple heads", {
 
   heads <- am_get_heads(doc)
   expect_gte(length(heads), 2)
-  expect_error(
-    am_map_range(doc, AM_ROOT, "a", "z", heads),
-    "multiple heads"
-  )
+  result <- am_map_range(doc, AM_ROOT, "a", "z", heads)
+  expect_type(result, "list")
+  expect_gte(length(result), 3)
 })
 
-test_that("am_list_range() errors on multiple heads", {
+test_that("am_list_range() supports multiple heads", {
   doc <- am_create()
   doc$items <- list("a", "b")
   am_commit(doc)
@@ -2202,13 +2229,12 @@ test_that("am_list_range() errors on multiple heads", {
 
   heads <- am_get_heads(doc)
   expect_gte(length(heads), 2)
-  expect_error(
-    am_list_range(doc, items1, 1, 5, heads),
-    "multiple heads"
-  )
+  result <- am_list_range(doc, items1, 1, 5, heads)
+  expect_type(result, "list")
+  expect_gte(length(result), 3)
 })
 
-test_that("am_items() errors on multiple heads", {
+test_that("am_items() supports multiple heads", {
   doc <- am_create()
   doc$a <- 1
   am_commit(doc)
@@ -2222,10 +2248,9 @@ test_that("am_items() errors on multiple heads", {
 
   heads <- am_get_heads(doc)
   expect_gte(length(heads), 2)
-  expect_error(
-    am_items(doc, AM_ROOT, heads),
-    "multiple heads"
-  )
+  result <- am_items(doc, AM_ROOT, heads)
+  expect_type(result, "list")
+  expect_gte(length(result), 3)
 })
 
 # am_list_get_all input validation

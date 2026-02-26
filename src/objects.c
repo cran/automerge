@@ -599,14 +599,20 @@ SEXP C_am_text_splice(SEXP text_ptr, SEXP pos, SEXP del_count, SEXP text) {
  * Get the full text content from a text object.
  *
  * @param text_ptr External pointer to AMobjId (must be a text object)
+ * @param heads Optional list of change hashes (or R_NilValue)
  * @return Character string with the full text content
  */
-SEXP C_am_text_content(SEXP text_ptr) {
+SEXP C_am_text_content(SEXP text_ptr, SEXP heads) {
     SEXP doc_ptr = get_doc_from_objid(text_ptr);
     AMdoc *doc = get_doc(doc_ptr);
     const AMobjId *text_obj = get_objid(text_ptr);
 
-    AMresult *result = AMtext(doc, text_obj, NULL);
+    AMitems heads_items;
+    AMresult *heads_result = NULL;
+    AMitems *heads_ptr = resolve_heads(heads, &heads_items, &heads_result);
+
+    AMresult *result = AMtext(doc, text_obj, heads_ptr);
+    if (heads_result) AMresultFree(heads_result);
     CHECK_RESULT(result, AM_VAL_TYPE_VOID);
 
     AMitem *item = AMresultItem(result);
@@ -725,39 +731,44 @@ static inline size_t utf8_prev(const char **p, const char *start) {
 /**
  * Compute diff and splice text in a single operation.
  *
- * This is an optimized function for collaborative editing that computes
- * the minimal diff between old and new text and applies it directly,
- * avoiding intermediate R object allocation.
+ * This is an optimized function for collaborative editing that reads
+ * the current text content, computes the minimal diff against new text,
+ * and applies it directly, avoiding intermediate R object allocation.
  *
  * @param text_ptr External pointer to AMobjId (must be a text object)
- * @param old_sexp The previous text content (single string)
  * @param new_sexp The new text content (single string)
  * @return R_NilValue (called for side effect)
  */
-SEXP C_am_text_update(SEXP text_ptr, SEXP old_sexp, SEXP new_sexp) {
-    if (TYPEOF(old_sexp) != STRSXP || XLENGTH(old_sexp) != 1)
-        Rf_error("'old' must be a single string");
+SEXP C_am_text_update(SEXP text_ptr, SEXP new_sexp) {
     if (TYPEOF(new_sexp) != STRSXP || XLENGTH(new_sexp) != 1)
-        Rf_error("'new' must be a single string");
+        Rf_error("'new_text' must be a single string");
 
-    SEXP old_elt = STRING_ELT(old_sexp, 0);
     SEXP new_elt = STRING_ELT(new_sexp, 0);
-    if (old_elt == NA_STRING || new_elt == NA_STRING)
+    if (new_elt == NA_STRING)
         Rf_error("NA strings not supported");
-
-    const char *old_str = CHAR(old_elt);
-    const char *new_str = CHAR(new_elt);
-    size_t old_bytes = strlen(old_str);
-    size_t new_bytes = strlen(new_str);
-
-    // Fast path: identical strings
-    if (old_bytes == new_bytes && memcmp(old_str, new_str, old_bytes) == 0) {
-        return R_NilValue;
-    }
 
     SEXP doc_ptr = get_doc_from_objid(text_ptr);
     AMdoc *doc = get_doc(doc_ptr);
     const AMobjId *text_obj = get_objid(text_ptr);
+
+    // Read current text content from the document
+    AMresult *text_result = AMtext(doc, text_obj, NULL);
+    CHECK_RESULT(text_result, AM_VAL_TYPE_VOID);
+
+    AMitem *text_item = AMresultItem(text_result);
+    AMbyteSpan old_span;
+    AMitemToStr(text_item, &old_span);
+
+    const char *old_str = (const char *) old_span.src;
+    size_t old_bytes = old_span.count;
+    const char *new_str = CHAR(new_elt);
+    size_t new_bytes = strlen(new_str);
+
+    // Fast path: identical strings
+    if (old_bytes == new_bytes && memcmp(old_str, new_str, old_bytes) == 0) {
+        AMresultFree(text_result);
+        return R_NilValue;
+    }
 
     const char *old_end = old_str + old_bytes;
     const char *new_end = new_str + new_bytes;
@@ -820,6 +831,9 @@ SEXP C_am_text_update(SEXP text_ptr, SEXP old_sexp, SEXP new_sexp) {
     // Insertion: bytes between prefix and suffix in new string
     size_t ins_start = new_prefix_bytes;
     size_t ins_bytes = new_suf - (new_str + new_prefix_bytes);
+
+    // Done reading old_str, free the text result before splicing
+    AMresultFree(text_result);
 
     AMbyteSpan ins_span = {
         .src = (uint8_t const *)(new_str + ins_start),

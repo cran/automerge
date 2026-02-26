@@ -381,7 +381,7 @@ applications like shared notebooks or data pipelines</li>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>doc <span class="ot">&lt;-</span> <span class="fu">am_create</span>()</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">print</span>(doc)</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; &lt;Automerge Document&gt;</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; Actor: c575e95ef678706a0040981fe5431d64 </span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; Actor: 40b23064f4c6ada4943e7f07ea38e6a3 </span></span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; Root keys: 0</span></span></code></pre></div>
 <p>Note: When you’re done working with a document, you can explicitly
 free its resources with <code>am_close(doc)</code> if you don’t want to
@@ -579,12 +579,11 @@ wins). For collaborative text editing, use text objects:</p>
 <span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a></span>
 <span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="co"># For collaborative editors, use am_text_update() which computes</span></span>
 <span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="co"># and applies the minimal diff in one step:</span></span>
-<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a>old_text <span class="ot">&lt;-</span> <span class="fu">am_text_content</span>(text_obj)</span>
-<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="fu">am_text_update</span>(text_obj, old_text, <span class="st">&quot;New content from user input&quot;</span>)</span>
-<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="fu">am_text_content</span>(text_obj)</span>
-<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="co">#&gt; [1] &quot;New content from user input&quot;</span></span>
-<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a></span>
-<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a><span class="fu">am_close</span>(doc7)</span></code></pre></div>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a><span class="fu">am_text_update</span>(text_obj, <span class="st">&quot;New content from user input&quot;</span>)</span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="fu">am_text_content</span>(text_obj)</span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="co">#&gt; [1] &quot;New content from user input&quot;</span></span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a></span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a><span class="fu">am_close</span>(doc7)</span></code></pre></div>
 </div>
 <div id="counters-for-crdt-counting" class="section level3">
 <h3>Counters (for CRDT Counting)</h3>
@@ -613,7 +612,7 @@ without conflicts:</p>
 <span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="fu">am_put</span>(doc9, AM_ROOT, <span class="st">&quot;updated_at&quot;</span>, <span class="fu">Sys.time</span>())</span>
 <span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a></span>
 <span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>doc9[[<span class="st">&quot;created_at&quot;</span>]]</span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-18 20:39:10 GMT&quot;</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-26 08:39:49 GMT&quot;</span></span>
 <span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a></span>
 <span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="fu">am_close</span>(doc9)</span></code></pre></div>
 </div>
@@ -791,15 +790,15 @@ inspect this with the change introspection functions:</p>
 <span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a>history</span>
 <span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
 <span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a><span class="co">#&gt; &lt;Automerge Change&gt;</span></span>
-<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a><span class="co">#&gt; Hash: a0 e1 98 f5 ...</span></span>
+<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a><span class="co">#&gt; Hash: c0 e8 b8 fd ...</span></span>
 <span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a><span class="co">#&gt; Message: Initial setup </span></span>
-<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a><span class="co">#&gt; Time: 2026-02-18 20:39:11 </span></span>
+<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a><span class="co">#&gt; Time: 2026-02-26 08:39:49 </span></span>
 <span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a><span class="co">#&gt; [[2]]</span></span>
 <span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a><span class="co">#&gt; &lt;Automerge Change&gt;</span></span>
-<span id="cb20-19"><a href="#cb20-19" tabindex="-1"></a><span class="co">#&gt; Hash: 44 0f b6 f8 ...</span></span>
+<span id="cb20-19"><a href="#cb20-19" tabindex="-1"></a><span class="co">#&gt; Hash: 48 7a 91 da ...</span></span>
 <span id="cb20-20"><a href="#cb20-20" tabindex="-1"></a><span class="co">#&gt; Message: Set version </span></span>
-<span id="cb20-21"><a href="#cb20-21" tabindex="-1"></a><span class="co">#&gt; Time: 2026-02-18 20:39:11</span></span>
+<span id="cb20-21"><a href="#cb20-21" tabindex="-1"></a><span class="co">#&gt; Time: 2026-02-26 08:39:49</span></span>
 <span id="cb20-22"><a href="#cb20-22" tabindex="-1"></a></span>
 <span id="cb20-23"><a href="#cb20-23" tabindex="-1"></a><span class="co"># Inspect each change - no parsing needed</span></span>
 <span id="cb20-24"><a href="#cb20-24" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(history)) {</span>
@@ -818,20 +817,20 @@ inspect this with the change introspection functions:</p>
 <span id="cb20-37"><a href="#cb20-37" tabindex="-1"></a><span class="co"># Extract many fields from the same change</span></span>
 <span id="cb20-38"><a href="#cb20-38" tabindex="-1"></a>change <span class="ot">&lt;-</span> history[[<span class="dv">2</span>]]</span>
 <span id="cb20-39"><a href="#cb20-39" tabindex="-1"></a><span class="fu">am_change_hash</span>(change)     <span class="co"># Unique 32-byte hash</span></span>
-<span id="cb20-40"><a href="#cb20-40" tabindex="-1"></a><span class="co">#&gt;  [1] 44 0f b6 f8 8e 00 82 25 d6 6a c3 ed 01 aa de 53 c3 bf a5 bc 2f 79 f9 e9 13</span></span>
-<span id="cb20-41"><a href="#cb20-41" tabindex="-1"></a><span class="co">#&gt; [26] c1 24 15 72 de 74 0f</span></span>
+<span id="cb20-40"><a href="#cb20-40" tabindex="-1"></a><span class="co">#&gt;  [1] 48 7a 91 da ac be 95 05 e1 de 08 08 01 69 d1 f2 f6 4f e7 2a 0d c7 c6 d8 23</span></span>
+<span id="cb20-41"><a href="#cb20-41" tabindex="-1"></a><span class="co">#&gt; [26] 18 10 42 4a 19 c8 a3</span></span>
 <span id="cb20-42"><a href="#cb20-42" tabindex="-1"></a><span class="fu">am_change_message</span>(change)  <span class="co"># Commit message</span></span>
 <span id="cb20-43"><a href="#cb20-43" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Set version&quot;</span></span>
 <span id="cb20-44"><a href="#cb20-44" tabindex="-1"></a><span class="fu">am_change_time</span>(change)     <span class="co"># Timestamp</span></span>
-<span id="cb20-45"><a href="#cb20-45" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-18 20:39:11 GMT&quot;</span></span>
+<span id="cb20-45"><a href="#cb20-45" tabindex="-1"></a><span class="co">#&gt; [1] &quot;2026-02-26 08:39:49 GMT&quot;</span></span>
 <span id="cb20-46"><a href="#cb20-46" tabindex="-1"></a><span class="fu">am_change_seq</span>(change)      <span class="co"># Sequence number</span></span>
 <span id="cb20-47"><a href="#cb20-47" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
 <span id="cb20-48"><a href="#cb20-48" tabindex="-1"></a><span class="fu">am_change_actor_id</span>(change) <span class="co"># Who made the change</span></span>
-<span id="cb20-49"><a href="#cb20-49" tabindex="-1"></a><span class="co">#&gt;  [1] d8 ad cd e5 ce f4 b8 92 5c 76 d4 16 27 00 46 3b</span></span>
+<span id="cb20-49"><a href="#cb20-49" tabindex="-1"></a><span class="co">#&gt;  [1] 1f 0e 34 0b 52 08 0e 51 02 23 9b 43 d1 61 e1 5d</span></span>
 <span id="cb20-50"><a href="#cb20-50" tabindex="-1"></a><span class="fu">am_change_deps</span>(change)     <span class="co"># Parent change hashes</span></span>
 <span id="cb20-51"><a href="#cb20-51" tabindex="-1"></a><span class="co">#&gt; [[1]]</span></span>
-<span id="cb20-52"><a href="#cb20-52" tabindex="-1"></a><span class="co">#&gt;  [1] a0 e1 98 f5 f5 af 98 c0 1a 69 3e cd 89 b9 d9 46 2f 6d e3 a4 58 cc f9 3e 37</span></span>
-<span id="cb20-53"><a href="#cb20-53" tabindex="-1"></a><span class="co">#&gt; [26] 93 7a 25 22 26 2a 6e</span></span>
+<span id="cb20-52"><a href="#cb20-52" tabindex="-1"></a><span class="co">#&gt;  [1] c0 e8 b8 fd de 68 b2 ba 4f e1 d1 35 35 86 12 a5 b9 9a 89 16 f7 71 0a e9 84</span></span>
+<span id="cb20-53"><a href="#cb20-53" tabindex="-1"></a><span class="co">#&gt; [26] 2b 46 d1 e8 70 7d d3</span></span>
 <span id="cb20-54"><a href="#cb20-54" tabindex="-1"></a><span class="fu">am_change_size</span>(change)     <span class="co"># Number of operations</span></span>
 <span id="cb20-55"><a href="#cb20-55" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
 <span id="cb20-56"><a href="#cb20-56" tabindex="-1"></a></span>
@@ -926,13 +925,13 @@ from the historical state without affecting the original:</p>
 <span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a>v1_heads <span class="ot">&lt;-</span> <span class="fu">am_get_heads</span>(doc_branch)</span>
 <span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a></span>
 <span id="cb23-8"><a href="#cb23-8" tabindex="-1"></a>text_obj <span class="ot">&lt;-</span> <span class="fu">am_get</span>(doc_branch, AM_ROOT, <span class="st">&quot;text&quot;</span>)</span>
-<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a><span class="fu">am_text_update</span>(text_obj, <span class="st">&quot;Hello World&quot;</span>, <span class="st">&quot;Hello World - CONFIDENTIAL&quot;</span>)</span>
+<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a><span class="fu">am_text_update</span>(text_obj, <span class="st">&quot;Hello World - CONFIDENTIAL&quot;</span>)</span>
 <span id="cb23-10"><a href="#cb23-10" tabindex="-1"></a><span class="fu">am_commit</span>(doc_branch, <span class="st">&quot;Add confidential marker&quot;</span>)</span>
 <span id="cb23-11"><a href="#cb23-11" tabindex="-1"></a></span>
 <span id="cb23-12"><a href="#cb23-12" tabindex="-1"></a><span class="co"># Create a public version from v1 and take it in a different direction</span></span>
 <span id="cb23-13"><a href="#cb23-13" tabindex="-1"></a>public <span class="ot">&lt;-</span> <span class="fu">am_fork</span>(doc_branch, v1_heads)</span>
 <span id="cb23-14"><a href="#cb23-14" tabindex="-1"></a>public_text <span class="ot">&lt;-</span> <span class="fu">am_get</span>(public, AM_ROOT, <span class="st">&quot;text&quot;</span>)</span>
-<span id="cb23-15"><a href="#cb23-15" tabindex="-1"></a><span class="fu">am_text_update</span>(public_text, <span class="st">&quot;Hello World&quot;</span>, <span class="st">&quot;Hello World - Public Draft&quot;</span>)</span>
+<span id="cb23-15"><a href="#cb23-15" tabindex="-1"></a><span class="fu">am_text_update</span>(public_text, <span class="st">&quot;Hello World - Public Draft&quot;</span>)</span>
 <span id="cb23-16"><a href="#cb23-16" tabindex="-1"></a><span class="fu">am_commit</span>(public, <span class="st">&quot;Public version&quot;</span>)</span>
 <span id="cb23-17"><a href="#cb23-17" tabindex="-1"></a></span>
 <span id="cb23-18"><a href="#cb23-18" tabindex="-1"></a><span class="fu">am_text_content</span>(public_text) <span class="co"># &quot;Hello World - Public Draft&quot;</span></span>

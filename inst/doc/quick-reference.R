@@ -135,8 +135,7 @@ knitr::opts_chunk$set(
 # content <- am_text_content(text_obj) # Get full text
 # 
 # # Update text (ideal for collaborative editing)
-# old_text <- am_text_content(text_obj)
-# am_text_update(text_obj, old_text, "Hello Universe") # Computes and applies diff
+# am_text_update(text_obj, "Hello Universe") # Computes and applies diff
 # 
 # # Cursors (stable positions)
 # cursor <- am_cursor(text_obj, 5) # Create at position 5

@@ -481,29 +481,28 @@ documentation with <code>?function_name</code>.</p>
 <span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>content <span class="ot">&lt;-</span> <span class="fu">am_text_content</span>(text_obj) <span class="co"># Get full text</span></span>
 <span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a></span>
 <span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co"># Update text (ideal for collaborative editing)</span></span>
-<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>old_text <span class="ot">&lt;-</span> <span class="fu">am_text_content</span>(text_obj)</span>
-<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="fu">am_text_update</span>(text_obj, old_text, <span class="st">&quot;Hello Universe&quot;</span>) <span class="co"># Computes and applies diff</span></span>
-<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a></span>
-<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co"># Cursors (stable positions)</span></span>
-<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>cursor <span class="ot">&lt;-</span> <span class="fu">am_cursor</span>(text_obj, <span class="dv">5</span>) <span class="co"># Create at position 5</span></span>
-<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>pos <span class="ot">&lt;-</span> <span class="fu">am_cursor_position</span>(cursor) <span class="co"># Get current position</span></span>
-<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>cursor <span class="ot">&lt;-</span> <span class="fu">am_cursor</span>(text_obj, <span class="dv">5</span>, heads) <span class="co"># Create at historical state</span></span>
-<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>pos <span class="ot">&lt;-</span> <span class="fu">am_cursor_position</span>(cursor, heads) <span class="co"># Position at historical state</span></span>
-<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a></span>
-<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co"># Cursor serialization (persistence across sessions)</span></span>
-<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>bytes <span class="ot">&lt;-</span> <span class="fu">am_cursor_to_bytes</span>(cursor) <span class="co"># Serialize to raw</span></span>
-<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>cursor <span class="ot">&lt;-</span> <span class="fu">am_cursor_from_bytes</span>(bytes, text_obj) <span class="co"># Restore from raw</span></span>
-<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a>str <span class="ot">&lt;-</span> <span class="fu">am_cursor_to_string</span>(cursor) <span class="co"># Serialize to string</span></span>
-<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a>cursor <span class="ot">&lt;-</span> <span class="fu">am_cursor_from_string</span>(str, text_obj) <span class="co"># Restore from string</span></span>
-<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="fu">am_cursor_equal</span>(cursor1, cursor2) <span class="co"># Compare cursors</span></span>
-<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a></span>
-<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="co"># Marks (formatting)</span></span>
-<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="fu">am_mark</span>(text_obj, <span class="dv">0</span>, <span class="dv">5</span>, <span class="st">&quot;bold&quot;</span>, <span class="cn">TRUE</span>, <span class="at">expand =</span> <span class="st">&quot;none&quot;</span>)</span>
-<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a>marks <span class="ot">&lt;-</span> <span class="fu">am_marks</span>(text_obj) <span class="co"># Get all marks</span></span>
-<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a>marks <span class="ot">&lt;-</span> <span class="fu">am_marks</span>(text_obj, heads) <span class="co"># Marks at historical state</span></span>
-<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a>marks_at <span class="ot">&lt;-</span> <span class="fu">am_marks_at</span>(text_obj, <span class="dv">2</span>) <span class="co"># Marks at position 2</span></span>
-<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a>marks_at <span class="ot">&lt;-</span> <span class="fu">am_marks_at</span>(text_obj, <span class="dv">2</span>, heads) <span class="co"># At position, historical state</span></span>
-<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a><span class="fu">am_mark_clear</span>(text_obj, <span class="dv">0</span>, <span class="dv">5</span>, <span class="st">&quot;bold&quot;</span>) <span class="co"># Remove a mark from range</span></span></code></pre></div>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="fu">am_text_update</span>(text_obj, <span class="st">&quot;Hello Universe&quot;</span>) <span class="co"># Computes and applies diff</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co"># Cursors (stable positions)</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>cursor <span class="ot">&lt;-</span> <span class="fu">am_cursor</span>(text_obj, <span class="dv">5</span>) <span class="co"># Create at position 5</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>pos <span class="ot">&lt;-</span> <span class="fu">am_cursor_position</span>(cursor) <span class="co"># Get current position</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>cursor <span class="ot">&lt;-</span> <span class="fu">am_cursor</span>(text_obj, <span class="dv">5</span>, heads) <span class="co"># Create at historical state</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>pos <span class="ot">&lt;-</span> <span class="fu">am_cursor_position</span>(cursor, heads) <span class="co"># Position at historical state</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co"># Cursor serialization (persistence across sessions)</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>bytes <span class="ot">&lt;-</span> <span class="fu">am_cursor_to_bytes</span>(cursor) <span class="co"># Serialize to raw</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>cursor <span class="ot">&lt;-</span> <span class="fu">am_cursor_from_bytes</span>(bytes, text_obj) <span class="co"># Restore from raw</span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>str <span class="ot">&lt;-</span> <span class="fu">am_cursor_to_string</span>(cursor) <span class="co"># Serialize to string</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a>cursor <span class="ot">&lt;-</span> <span class="fu">am_cursor_from_string</span>(str, text_obj) <span class="co"># Restore from string</span></span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="fu">am_cursor_equal</span>(cursor1, cursor2) <span class="co"># Compare cursors</span></span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co"># Marks (formatting)</span></span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="fu">am_mark</span>(text_obj, <span class="dv">0</span>, <span class="dv">5</span>, <span class="st">&quot;bold&quot;</span>, <span class="cn">TRUE</span>, <span class="at">expand =</span> <span class="st">&quot;none&quot;</span>)</span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a>marks <span class="ot">&lt;-</span> <span class="fu">am_marks</span>(text_obj) <span class="co"># Get all marks</span></span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a>marks <span class="ot">&lt;-</span> <span class="fu">am_marks</span>(text_obj, heads) <span class="co"># Marks at historical state</span></span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a>marks_at <span class="ot">&lt;-</span> <span class="fu">am_marks_at</span>(text_obj, <span class="dv">2</span>) <span class="co"># Marks at position 2</span></span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a>marks_at <span class="ot">&lt;-</span> <span class="fu">am_marks_at</span>(text_obj, <span class="dv">2</span>, heads) <span class="co"># At position, historical state</span></span>
+<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a><span class="fu">am_mark_clear</span>(text_obj, <span class="dv">0</span>, <span class="dv">5</span>, <span class="st">&quot;bold&quot;</span>) <span class="co"># Remove a mark from range</span></span></code></pre></div>
 </div>
 <div id="value-types" class="section level2">
 <h2>Value Types</h2>
